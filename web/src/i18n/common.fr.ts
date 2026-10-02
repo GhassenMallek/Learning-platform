@@ -2,6 +2,9 @@ import type { commonEn } from './common.en';
 
 export const commonFr: typeof commonEn = {
   common: {
+    updateReady: 'Une nouvelle version de l’application est disponible.',
+    updateReload: 'Recharger',
+    offlineReady: 'L’application est prête à fonctionner hors ligne.',
     loading: 'Chargement…',
     retry: 'Réessayer',
     cancel: 'Annuler',

@@ -2,6 +2,9 @@
 export const commonEn = {
   common: {
     loading: 'Loading…',
+    updateReady: 'A new version of the app is available.',
+    updateReload: 'Reload',
+    offlineReady: 'The app is ready to work offline.',
     retry: 'Try again',
     cancel: 'Cancel',
     save: 'Save',

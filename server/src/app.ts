@@ -90,9 +90,22 @@ export function createApp(options: AppOptions = {}) {
   // Production convenience: serve the built web app (client-side routes fall back to index.html).
   const indexHtml = path.join(env.webDistDir, 'index.html');
   if (fs.existsSync(indexHtml)) {
-    app.use(express.static(env.webDistDir, { index: false, maxAge: '1h' }));
+    app.use(
+      express.static(env.webDistDir, {
+        index: false,
+        setHeaders: (res, filePath) => {
+          const rel = path.relative(env.webDistDir, filePath).split(path.sep).join('/');
+          // Hashed bundles never change; the service worker, its manifest and the app shell must always be
+          // revalidated, otherwise installed apps would keep running an old version.
+          if (rel.startsWith('assets/')) res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+          else if (/^(index\.html|sw\.js|registerSW\.js|workbox-[\w-]+\.js|manifest\.webmanifest)$/.test(rel)) res.setHeader('Cache-Control', 'no-cache');
+          else res.setHeader('Cache-Control', 'public, max-age=86400');
+        },
+      }),
+    );
     app.use((req, res, next) => {
-      if (req.method !== 'GET' || req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+      if ((req.method !== 'GET' && req.method !== 'HEAD') || req.path.startsWith('/api') || req.path.startsWith('/uploads')) return next();
+      res.setHeader('Cache-Control', 'no-cache');
       res.sendFile(indexHtml);
     });
   }

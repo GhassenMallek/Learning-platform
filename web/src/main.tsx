@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 import { AuthProvider } from './auth/AuthProvider';
+import { PwaUpdater } from './components/PwaUpdater';
 import { ToastProvider } from './components/ui/overlays';
 import { I18nProvider } from './i18n';
 import './index.css';
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
           <AuthProvider>
             <ToastProvider>
               <App />
+              <PwaUpdater />
             </ToastProvider>
           </AuthProvider>
         </BrowserRouter>
