@@ -1,0 +1,37 @@
+# Meridian on the shared VPS: the app and its own MongoDB, namespaced by the project name.
+#
+#   cd ~/apps/meridian
+#   APP_PORT=8086 API_ENV_FILE=/home/debian/apps/meridian-secrets/meridian.env \
+#     docker compose -p meridian -f deploy/docker-compose.server.yml up -d --build
+#
+# Nginx (meridian.atheer.tn) proxies to 127.0.0.1:${APP_PORT}. No container_name: `-p meridian`
+# namespaces containers, network and volumes, like the other apps on this host.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    # No ports: reachable only from inside this project's network.
+
+  app:
+    build:
+      context: ..
+    image: meridian-app:${IMAGE_TAG:-local}
+    restart: unless-stopped
+    env_file:
+      - ${API_ENV_FILE:?set API_ENV_FILE to the meridian env file}
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/learning_center
+      PORT: 4000
+    depends_on:
+      - mongo
+    ports:
+      - '127.0.0.1:${APP_PORT:?set APP_PORT to a free host port}:4000'
+    volumes:
+      # Thumbnails, avatars and lesson documents survive rebuilds.
+      - uploads:/app/server/uploads
+
+volumes:
+  mongo_data:
+  uploads:

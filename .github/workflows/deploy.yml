@@ -1,0 +1,86 @@
+name: CI & Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  test:
+    name: Typecheck, test & build
+    runs-on: ubuntu-latest
+    services:
+      mongo:
+        image: mongo:7
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      MONGODB_URI_TEST: mongodb://127.0.0.1:27017/learning_center_test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+
+  deploy:
+    name: Deploy to meridian.atheer.tn
+    needs: test
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://meridian.atheer.tn
+    env:
+      APP_DIR: /home/debian/apps/meridian
+      APP_PORT: '8086'
+      API_ENV_FILE: /home/debian/apps/meridian-secrets/meridian.env
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+          printf 'Host vps\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  IdentitiesOnly yes\n' \
+            "${{ secrets.VPS_HOST }}" "${{ secrets.VPS_USER }}" > ~/.ssh/config
+
+      # The image is built on the server (like the other apps there). Secrets live outside the app folder.
+      - name: Sync source
+        run: |
+          rsync -az --delete \
+            --exclude '.git/' --exclude 'node_modules/' --exclude '**/dist/' \
+            --exclude '.claude/' --exclude '**/.env' --exclude 'server/uploads/' \
+            ./ "vps:$APP_DIR/"
+
+      - name: Build & restart
+        run: |
+          ssh vps "set -euo pipefail
+            cd $APP_DIR
+            test -f $API_ENV_FILE || { echo 'Missing $API_ENV_FILE on the server'; exit 1; }
+            export IMAGE_TAG=${GITHUB_SHA::7} APP_PORT=$APP_PORT API_ENV_FILE=$API_ENV_FILE
+            docker compose -p meridian -f deploy/docker-compose.server.yml up -d --build --remove-orphans
+            # Keep only the image now running (each deploy tags a new one).
+            docker images meridian-app --format '{{.Tag}}' | grep -vx \$IMAGE_TAG | xargs -r -I{} docker rmi meridian-app:{} >/dev/null || true"
+
+      - name: Health check
+        run: |
+          ssh vps 'for i in $(seq 1 30); do curl -fsS http://127.0.0.1:${{ env.APP_PORT }}/api/health && exit 0; sleep 2; done; docker compose -p meridian logs --tail 50 app; exit 1'
+          curl -fsS --retry 5 --retry-delay 3 https://meridian.atheer.tn/api/health

@@ -1,0 +1,83 @@
+import { ArrowDown, ArrowUp, Plus, Trash2 } from 'lucide-react';
+import { Button, Input, Textarea } from '@/components/ui/primitives';
+import { useI18n } from '@/i18n';
+import type { FaqItem, Localized } from '@/lib/types';
+import { IconButton } from './shared';
+
+const swap = <T,>(list: T[], i: number, delta: -1 | 1): T[] => {
+  const next = [...list];
+  const j = i + delta;
+  if (j < 0 || j >= next.length) return next;
+  [next[i], next[j]] = [next[j], next[i]];
+  return next;
+};
+
+const Err = ({ text }: { text?: string }) => (text ? <p role="alert" className="mt-1 text-xs font-medium text-rose-600">{text}</p> : null);
+
+function Controls<T>({ list, index, onChange, labels }: { list: T[]; index: number; onChange: (next: T[]) => void; labels: { up: string; down: string; remove: string } }) {
+  return (
+    <div className="flex shrink-0 items-center">
+      <IconButton label={labels.up} icon={ArrowUp} disabled={index === 0} onClick={() => onChange(swap(list, index, -1))} />
+      <IconButton label={labels.down} icon={ArrowDown} disabled={index === list.length - 1} onClick={() => onChange(swap(list, index, 1))} />
+      <IconButton label={labels.remove} icon={Trash2} tone="danger" onClick={() => onChange(list.filter((_, j) => j !== index))} />
+    </div>
+  );
+}
+
+/** A list of `{ en, fr }` pairs (objectives, audience, skills): one row per item, both languages side by side. */
+export function BilingualList({ items, onChange, errors, path, label, addLabel, maxLength = 300 }: { items: Localized[]; onChange: (items: Localized[]) => void; errors: Record<string, string>; path: string; label: string; addLabel: string; maxLength?: number }) {
+  const { t } = useI18n();
+  const labels = { up: t('admin.wizard.desc.moveUp'), down: t('admin.wizard.desc.moveDown'), remove: t('admin.wizard.desc.removeItem') };
+  const update = (i: number, lang: 'en' | 'fr', value: string) => onChange(items.map((it, j) => (j === i ? { ...it, [lang]: value } : it)));
+  return (
+    <div>
+      {items.length > 0 && (
+        <div className="mb-1.5 hidden grid-cols-2 gap-2 pr-[6.5rem] text-xs font-medium uppercase tracking-wide text-slate-400 sm:grid">
+          <span>{t('admin.wizard.desc.english')}</span>
+          <span>{t('admin.wizard.desc.french')}</span>
+        </div>
+      )}
+      <ul className="space-y-2.5">
+        {items.map((item, i) => (
+          <li key={i} className="flex items-start gap-1.5">
+            <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2">
+              <div><Input aria-label={`${label} ${i + 1} — ${t('admin.wizard.desc.english')}`} value={item.en} maxLength={maxLength} onChange={(e) => update(i, 'en', e.target.value)} /><Err text={errors[`${path}.${i}.en`]} /></div>
+              <div><Input aria-label={`${label} ${i + 1} — ${t('admin.wizard.desc.french')}`} value={item.fr} maxLength={maxLength} onChange={(e) => update(i, 'fr', e.target.value)} /><Err text={errors[`${path}.${i}.fr`]} /></div>
+            </div>
+            <Controls list={items} index={i} onChange={onChange} labels={labels} />
+          </li>
+        ))}
+      </ul>
+      <Button variant="secondary" size="sm" className="mt-3" iconLeft={<Plus className="h-4 w-4" aria-hidden />} onClick={() => onChange([...items, { en: '', fr: '' }])}>{addLabel}</Button>
+    </div>
+  );
+}
+
+export function FaqEditor({ items, onChange, errors }: { items: FaqItem[]; onChange: (items: FaqItem[]) => void; errors: Record<string, string> }) {
+  const { t } = useI18n();
+  const labels = { up: t('admin.wizard.desc.moveUp'), down: t('admin.wizard.desc.moveDown'), remove: t('admin.wizard.desc.removeItem') };
+  const set = (i: number, part: 'question' | 'answer', lang: 'en' | 'fr', value: string) => onChange(items.map((it, j) => (j === i ? { ...it, [part]: { ...it[part], [lang]: value } } : it)));
+  return (
+    <div>
+      <ul className="space-y-3">
+        {items.map((item, i) => (
+          <li key={i} className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 sm:p-4">
+            <div className="flex items-start gap-2">
+              <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-2">
+                {(['en', 'fr'] as const).map((lang) => (
+                  <div key={lang} className="space-y-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{t(lang === 'en' ? 'admin.wizard.desc.english' : 'admin.wizard.desc.french')}</p>
+                    <div><Input aria-label={`${t('admin.wizard.desc.question')} ${i + 1} — ${lang.toUpperCase()}`} placeholder={t('admin.wizard.desc.question')} value={item.question[lang]} maxLength={300} onChange={(e) => set(i, 'question', lang, e.target.value)} /><Err text={errors[`faq.${i}.question.${lang}`]} /></div>
+                    <div><Textarea aria-label={`${t('admin.wizard.desc.answer')} ${i + 1} — ${lang.toUpperCase()}`} placeholder={t('admin.wizard.desc.answer')} rows={3} value={item.answer[lang]} maxLength={2000} onChange={(e) => set(i, 'answer', lang, e.target.value)} /><Err text={errors[`faq.${i}.answer.${lang}`]} /></div>
+                  </div>
+                ))}
+              </div>
+              <Controls list={items} index={i} onChange={onChange} labels={labels} />
+            </div>
+          </li>
+        ))}
+      </ul>
+      <Button variant="secondary" size="sm" className="mt-3" iconLeft={<Plus className="h-4 w-4" aria-hidden />} onClick={() => onChange([...items, { question: { en: '', fr: '' }, answer: { en: '', fr: '' } }])}>{t('admin.wizard.desc.addQuestion')}</Button>
+    </div>
+  );
+}
