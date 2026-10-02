@@ -1,5 +1,6 @@
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { homeFor, useAuth } from '@/auth/AuthProvider';
 import { LangSwitcher, Logo } from '@/components/brand';
@@ -66,7 +67,9 @@ function Header() {
           </button>
         </div>
       </div>
-      {open && (
+      {/* Portalled to <body>: the header's backdrop-filter makes it the containing block for fixed children,
+          which would collapse this full-screen panel to the header's height. */}
+      {open && createPortal(
         <div id="mobile-nav" className="fixed inset-x-0 bottom-0 top-16 z-30 animate-fade-in overflow-y-auto bg-white md:hidden">
           <nav aria-label={t('nav.main')} className="container-page flex flex-col gap-1 py-6">
             {links.map((l) => (
@@ -85,7 +88,8 @@ function Header() {
               )}
             </div>
           </nav>
-        </div>
+        </div>,
+        document.body,
       )}
     </header>
   );
