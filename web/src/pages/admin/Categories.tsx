@@ -20,8 +20,8 @@ function ItemDialog({ kind, item, onClose, onSaved }: { kind: Kind; item?: Item;
   const errors = useErrorText();
   const isCat = kind === 'categories';
   const [form, setForm] = useState({
-    name_en: item?.name_en ?? '', name_fr: item?.name_fr ?? '',
-    description_en: (item as Category | undefined)?.description_en ?? '', description_fr: (item as Category | undefined)?.description_fr ?? '',
+    name_fr: item?.name_fr ?? '',
+    description_fr: (item as Category | undefined)?.description_fr ?? '',
     sortOrder: item ? String(item.sortOrder) : '', slug: item?.slug ?? '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -31,8 +31,8 @@ function ItemDialog({ kind, item, onClose, onSaved }: { kind: Kind; item?: Item;
   const save = useMutation({
     mutationFn: () => {
       const body = {
-        name_en: form.name_en, name_fr: form.name_fr,
-        ...(isCat ? { description_en: form.description_en, description_fr: form.description_fr } : {}),
+        name_fr: form.name_fr,
+        ...(isCat ? { description_fr: form.description_fr } : {}),
         ...(form.sortOrder !== '' ? { sortOrder: Number(form.sortOrder) } : {}),
         ...(form.slug.trim() ? { slug: form.slug.trim().toLowerCase() } : {}),
       };
@@ -43,7 +43,7 @@ function ItemDialog({ kind, item, onClose, onSaved }: { kind: Kind; item?: Item;
   });
 
   const submit = () => {
-    const issues = validate(form, { name_en: [rules.required], name_fr: [rules.required] });
+    const issues = validate(form, { name_fr: [rules.required] });
     const messages = Object.fromEntries(Object.entries(issues).map(([k, i]) => [k, errors.field({ field: k, ...i! })]));
     if (form.sortOrder !== '' && !(Number.isInteger(Number(form.sortOrder)) && Number(form.sortOrder) >= 0)) messages.sortOrder = errors.field({ field: 'sortOrder', code: 'too_small', min: 0 });
     setFieldErrors(messages);
@@ -54,15 +54,9 @@ function ItemDialog({ kind, item, onClose, onSaved }: { kind: Kind; item?: Item;
     <Modal open onClose={onClose} size="lg" title={item ? t(isCat ? 'admin.taxonomy.editCategory' : 'admin.taxonomy.editYear') : t(isCat ? 'admin.taxonomy.addCategory' : 'admin.taxonomy.addYear')}
       footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button onClick={submit} loading={save.isPending}>{t('common.save')}</Button></>}>
       <form onSubmit={(e) => { e.preventDefault(); submit(); }} noValidate className="space-y-4">
-        <Pair>
-          <Field label={t('admin.taxonomy.nameEn')} required error={fieldErrors.name_en}><Input value={form.name_en} onChange={set('name_en')} maxLength={isCat ? 80 : 60} data-autofocus /></Field>
-          <Field label={t('admin.taxonomy.nameFr')} required error={fieldErrors.name_fr}><Input value={form.name_fr} onChange={set('name_fr')} maxLength={isCat ? 80 : 60} /></Field>
-        </Pair>
+        <Field label={t('admin.taxonomy.nameFr')} required error={fieldErrors.name_fr}><Input value={form.name_fr} onChange={set('name_fr')} maxLength={isCat ? 80 : 60} data-autofocus /></Field>
         {isCat && (
-          <Pair>
-            <Field label={t('admin.taxonomy.descEn')} optionalLabel={t('common.optional')} error={fieldErrors.description_en}><Textarea rows={3} value={form.description_en} onChange={set('description_en')} maxLength={400} /></Field>
-            <Field label={t('admin.taxonomy.descFr')} optionalLabel={t('common.optional')} error={fieldErrors.description_fr}><Textarea rows={3} value={form.description_fr} onChange={set('description_fr')} maxLength={400} /></Field>
-          </Pair>
+          <Field label={t('admin.taxonomy.descFr')} optionalLabel={t('common.optional')} error={fieldErrors.description_fr}><Textarea rows={3} value={form.description_fr} onChange={set('description_fr')} maxLength={400} /></Field>
         )}
         <Pair>
           <Field label={t('admin.taxonomy.order')} optionalLabel={t('common.optional')} error={fieldErrors.sortOrder}><Input type="number" min={0} inputMode="numeric" value={form.sortOrder} onChange={set('sortOrder')} /></Field>
@@ -99,7 +93,7 @@ function TaxonomyManager({ kind }: { kind: Kind }) {
 
   const columns: Column<Item>[] = [
     { id: 'name', header: t('admin.taxonomy.cols.name'), primary: true, cell: (i) => (
-      <div className="min-w-0"><p className="truncate font-semibold text-slate-900">{pick(i, 'name')}</p><p className="truncate text-xs text-slate-500">{i.name_en} · {i.name_fr}</p></div>
+      <div className="min-w-0"><p className="truncate font-semibold text-slate-900">{pick(i, 'name')}</p></div>
     ) },
     { id: 'slug', header: t('admin.taxonomy.cols.slug'), hideBelow: 'md', cell: (i) => <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">{i.slug}</code> },
     { id: 'courses', header: t('admin.taxonomy.cols.courses'), cell: (i) => <span className="tabular-nums">{i.courseCount ?? 0}</span> },

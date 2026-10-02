@@ -13,32 +13,26 @@ const slugField = z
 // ── Taxonomy ──────────────────────────────────────────────────────────────────────────
 const categoryShape = {
   slug: slugField,
-  name_en: reqStr(80),
   name_fr: reqStr(80),
-  description_en: str(400),
   description_fr: str(400),
   sortOrder: z.number().int().min(0).max(100000),
 };
-export const createCategorySchema = z.object(categoryShape).partial().extend({ name_en: categoryShape.name_en, name_fr: categoryShape.name_fr });
+export const createCategorySchema = z.object(categoryShape).partial().extend({ name_fr: categoryShape.name_fr });
 export const updateCategorySchema = z.object(categoryShape).partial();
 
 const yearShape = {
   slug: slugField,
-  name_en: reqStr(60),
   name_fr: reqStr(60),
   sortOrder: z.number().int().min(0).max(100000),
 };
-export const createAcademicYearSchema = z.object(yearShape).partial().extend({ name_en: yearShape.name_en, name_fr: yearShape.name_fr });
+export const createAcademicYearSchema = z.object(yearShape).partial().extend({ name_fr: yearShape.name_fr });
 export const updateAcademicYearSchema = z.object(yearShape).partial();
 
 // ── Course ────────────────────────────────────────────────────────────────────────────
 const courseShape = {
   slug: slugField.min(3),
-  title_en: reqStr(200),
   title_fr: reqStr(200),
-  shortDescription_en: str(400),
   shortDescription_fr: str(400),
-  description_en: str(12000),
   description_fr: str(12000),
   category: objectId,
   academicYear: objectId.nullable(),
@@ -61,7 +55,7 @@ const courseShape = {
 export const createCourseSchema = z
   .object(courseShape)
   .partial()
-  .extend({ title_en: courseShape.title_en, title_fr: courseShape.title_fr, category: courseShape.category });
+  .extend({ title_fr: courseShape.title_fr, category: courseShape.category });
 export const updateCourseSchema = z.object(courseShape).partial();
 
 export const listCoursesQuery = paginationQuery.extend({
@@ -76,15 +70,13 @@ export const listCoursesQuery = paginationQuery.extend({
 
 // ── Modules & lessons ─────────────────────────────────────────────────────────────────
 const moduleShape = {
-  title_en: reqStr(200),
   title_fr: reqStr(200),
-  description_en: str(1000),
   description_fr: str(1000),
 };
 export const createModuleSchema = z
   .object(moduleShape)
   .partial()
-  .extend({ title_en: moduleShape.title_en, title_fr: moduleShape.title_fr, courseId: objectId });
+  .extend({ title_fr: moduleShape.title_fr, courseId: objectId });
 export const updateModuleSchema = z.object(moduleShape).partial();
 
 export const reorderSchema = z
@@ -93,11 +85,8 @@ export const reorderSchema = z
 
 const lessonShape = {
   type: z.enum(LESSON_TYPES),
-  title_en: reqStr(200),
   title_fr: reqStr(200),
-  description_en: str(1000),
   description_fr: str(1000),
-  content_en: z.string().max(100000),
   content_fr: z.string().max(100000),
   videoUrl: optHttpUrl,
   durationMinutes: z.number().int().min(0).max(1440).nullable(),
@@ -115,5 +104,5 @@ const lessonShape = {
 export const createLessonSchema = z
   .object(lessonShape)
   .partial()
-  .extend({ title_en: lessonShape.title_en, title_fr: lessonShape.title_fr, moduleId: objectId });
+  .extend({ title_fr: lessonShape.title_fr, moduleId: objectId });
 export const updateLessonSchema = z.object(lessonShape).partial();

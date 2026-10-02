@@ -8,17 +8,16 @@ describe('modules and lessons', () => {
   it('creates modules and lessons in order and links each lesson to its course', async () => {
     const admin = await adminClient();
     const { course } = await makeCourse({ modules: 0 });
-    const m1 = await admin.post('/api/modules').send({ courseId: course.id, title_en: 'One', title_fr: 'Un' });
-    const m2 = await admin.post('/api/modules').send({ courseId: course.id, title_en: 'Two', title_fr: 'Deux' });
+    const m1 = await admin.post('/api/modules').send({ courseId: course.id, title_fr: 'Un' });
+    const m2 = await admin.post('/api/modules').send({ courseId: course.id, title_fr: 'Deux' });
     expect([m1.body.data.order, m2.body.data.order]).toEqual([0, 1]);
 
     const lesson = await admin.post('/api/lessons').send({
       moduleId: m1.body.data.id,
-      title_en: 'A',
       title_fr: 'A',
       type: 'VIDEO',
       videoUrl: 'https://www.youtube.com/watch?v=abc',
-      resources: [{ title: { en: 'Docs', fr: 'Docs' }, url: 'https://example.com/docs' }],
+      resources: [{ title: { fr: 'Docs' }, url: 'https://example.com/docs' }],
     });
     expect(lesson.status).toBe(201);
     expect(lesson.body.data).toMatchObject({ order: 0, type: 'VIDEO', course: course.id });
@@ -27,11 +26,11 @@ describe('modules and lessons', () => {
   it('rejects dangerous or malformed URLs and unknown lesson types', async () => {
     const admin = await adminClient();
     const { modules } = await makeCourse({ modules: 1, lessons: 0 });
-    const base = { moduleId: modules[0].id, title_en: 'A', title_fr: 'A' };
+    const base = { moduleId: modules[0].id, title_fr: 'A' };
     for (const bad of [
       { videoUrl: 'javascript:alert(1)' },
       { videoUrl: 'data:text/html,<script>alert(1)</script>' },
-      { resources: [{ title: { en: 'x', fr: 'x' }, url: 'javascript:alert(1)' }] },
+      { resources: [{ title: { fr: 'x' }, url: 'javascript:alert(1)' }] },
       { type: 'HACK' },
       { durationMinutes: -5 },
     ]) {
@@ -72,8 +71,8 @@ describe('modules and lessons', () => {
   it('updates and deletes a single lesson', async () => {
     const admin = await adminClient();
     const { lessons } = await makeCourse({ modules: 1, lessons: 1 });
-    const updated = await admin.put(`/api/lessons/${lessons[0].id}`).send({ title_en: 'Renamed', content_fr: '# Bonjour' });
-    expect(updated.body.data).toMatchObject({ title_en: 'Renamed', content_fr: '# Bonjour', title_fr: 'Leçon 1.1' });
+    const updated = await admin.put(`/api/lessons/${lessons[0].id}`).send({ title_fr: 'Renommée', content_fr: '# Bonjour' });
+    expect(updated.body.data).toMatchObject({ title_fr: 'Renommée', content_fr: '# Bonjour' });
     expect((await admin.delete(`/api/lessons/${lessons[0].id}`)).status).toBe(204);
     expect((await admin.get(`/api/lessons/${lessons[0].id}`)).status).toBe(404);
   });

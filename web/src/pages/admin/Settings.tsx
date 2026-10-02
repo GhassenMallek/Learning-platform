@@ -67,10 +67,7 @@ function CenterSettings() {
       <Panel title={t('admin.settings.center.name')}>
         <div className="space-y-5">
           <Field label={t('admin.settings.center.name')} required hint={t('admin.settings.center.nameHint')} error={fieldErrors.name}><Input value={form.name} onChange={set('name')} maxLength={80} /></Field>
-          <Pair>
-            <Field label={t('admin.settings.center.taglineEn')} error={fieldErrors.tagline_en}><Input value={form.tagline_en} onChange={set('tagline_en')} maxLength={160} /></Field>
-            <Field label={t('admin.settings.center.taglineFr')} error={fieldErrors.tagline_fr}><Input value={form.tagline_fr} onChange={set('tagline_fr')} maxLength={160} /></Field>
-          </Pair>
+          <Field label={t('admin.settings.center.taglineFr')} error={fieldErrors.tagline_fr}><Input value={form.tagline_fr} onChange={set('tagline_fr')} maxLength={160} /></Field>
           <div className="max-w-xs"><Field label={t('admin.settings.center.currency')} hint={t('admin.settings.center.currencyHint')} error={fieldErrors.currency}><Input value={form.currency} onChange={(e) => setForm({ ...form, currency: e.target.value.toUpperCase() })} maxLength={3} className="uppercase" /></Field></div>
         </div>
       </Panel>
@@ -82,11 +79,7 @@ function CenterSettings() {
           </Pair>
           <div className="max-w-md"><Field label={t('admin.settings.center.whatsapp')} error={fieldErrors.whatsapp}><Input type="tel" value={form.whatsapp} onChange={set('whatsapp')} maxLength={40} /></Field></div>
           <Pair>
-            <Field label={t('admin.settings.center.addressEn')} error={fieldErrors.address_en}><Input value={form.address_en} onChange={set('address_en')} maxLength={300} /></Field>
             <Field label={t('admin.settings.center.addressFr')} error={fieldErrors.address_fr}><Input value={form.address_fr} onChange={set('address_fr')} maxLength={300} /></Field>
-          </Pair>
-          <Pair>
-            <Field label={t('admin.settings.center.hoursEn')} error={fieldErrors.hours_en}><Input value={form.hours_en} onChange={set('hours_en')} maxLength={160} /></Field>
             <Field label={t('admin.settings.center.hoursFr')} error={fieldErrors.hours_fr}><Input value={form.hours_fr} onChange={set('hours_fr')} maxLength={160} /></Field>
           </Pair>
         </div>

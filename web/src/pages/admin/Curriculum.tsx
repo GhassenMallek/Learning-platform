@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { FileTypeIcon } from '@/components/FileType';
 import { EmptyState, ErrorState } from '@/components/ui/data';
 import { ConfirmDialog, Drawer, Modal, useToast } from '@/components/ui/overlays';
-import { Button, Field, Input, Segmented, Select, Skeleton, Textarea } from '@/components/ui/primitives';
+import { Button, Field, Input, Select, Skeleton, Textarea } from '@/components/ui/primitives';
 import { useErrorText, useI18n } from '@/i18n';
 import { api } from '@/lib/api';
 import { DOCUMENT_TYPES, LESSON_TYPES, type CourseDetail, type DocumentType, type LessonFull, type LessonOutline, type LessonResource, type LessonType, type ModuleOutline } from '@/lib/types';
@@ -28,7 +28,7 @@ const move = (ids: string[], index: number, delta: -1 | 1) => {
 function ModuleDialog({ courseId, module, onClose, onSaved }: { courseId: string; module?: ModuleOutline; onClose: () => void; onSaved: () => void }) {
   const { t } = useI18n();
   const errors = useErrorText();
-  const [form, setForm] = useState({ title_en: module?.title_en ?? '', title_fr: module?.title_fr ?? '', description_en: module?.description_en ?? '', description_fr: module?.description_fr ?? '' });
+  const [form, setForm] = useState({ title_fr: module?.title_fr ?? '', description_fr: module?.description_fr ?? '' });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const set = (k: keyof typeof form) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -38,7 +38,7 @@ function ModuleDialog({ courseId, module, onClose, onSaved }: { courseId: string
     onError: (err) => setFieldErrors(errors.fields(err)),
   });
   const submit = () => {
-    const issues = validate(form, { title_en: [rules.required], title_fr: [rules.required] });
+    const issues = validate(form, { title_fr: [rules.required] });
     const messages = Object.fromEntries(Object.entries(issues).map(([k, i]) => [k, errors.field({ field: k, ...i! })]));
     setFieldErrors(messages);
     if (!Object.keys(messages).length) save.mutate();
@@ -48,14 +48,8 @@ function ModuleDialog({ courseId, module, onClose, onSaved }: { courseId: string
     <Modal open onClose={onClose} title={module ? t('admin.curriculum.editModule') : t('admin.curriculum.newModule')} size="lg"
       footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button onClick={submit} loading={save.isPending}>{t('common.save')}</Button></>}>
       <form onSubmit={(e) => { e.preventDefault(); submit(); }} className="space-y-4" noValidate>
-        <Pair>
-          <Field label={t('admin.curriculum.moduleTitleEn')} required error={fieldErrors.title_en}><Input value={form.title_en} onChange={set('title_en')} data-autofocus maxLength={200} /></Field>
-          <Field label={t('admin.curriculum.moduleTitleFr')} required error={fieldErrors.title_fr}><Input value={form.title_fr} onChange={set('title_fr')} maxLength={200} /></Field>
-        </Pair>
-        <Pair>
-          <Field label={t('admin.curriculum.moduleDescEn')} optionalLabel={t('common.optional')} error={fieldErrors.description_en}><Textarea rows={3} value={form.description_en} onChange={set('description_en')} maxLength={1000} /></Field>
-          <Field label={t('admin.curriculum.moduleDescFr')} optionalLabel={t('common.optional')} error={fieldErrors.description_fr}><Textarea rows={3} value={form.description_fr} onChange={set('description_fr')} maxLength={1000} /></Field>
-        </Pair>
+        <Field label={t('admin.curriculum.moduleTitleFr')} required error={fieldErrors.title_fr}><Input value={form.title_fr} onChange={set('title_fr')} data-autofocus maxLength={200} /></Field>
+        <Field label={t('admin.curriculum.moduleDescFr')} optionalLabel={t('common.optional')} error={fieldErrors.description_fr}><Textarea rows={3} value={form.description_fr} onChange={set('description_fr')} maxLength={1000} /></Field>
         <button type="submit" className="sr-only" tabIndex={-1}>{t('common.save')}</button>
       </form>
     </Modal>
@@ -65,17 +59,14 @@ function ModuleDialog({ courseId, module, onClose, onSaved }: { courseId: string
 // ── Lesson drawer ───────────────────────────────────────────────────────────────────
 interface LessonForm {
   type: LessonType;
-  title_en: string;
   title_fr: string;
-  description_en: string;
   description_fr: string;
-  content_en: string;
   content_fr: string;
   videoUrl: string;
   durationMinutes: string;
   resources: LessonResource[];
 }
-const emptyLesson: LessonForm = { type: 'TEXT', title_en: '', title_fr: '', description_en: '', description_fr: '', content_en: '', content_fr: '', videoUrl: '', durationMinutes: '', resources: [] };
+const emptyLesson: LessonForm = { type: 'TEXT', title_fr: '', description_fr: '', content_fr: '', videoUrl: '', durationMinutes: '', resources: [] };
 
 function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: string; lessonId?: string; onClose: () => void; onSaved: () => void }) {
   const { t, lang } = useI18n();
@@ -84,7 +75,6 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
   const fileInput = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(0);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [contentLang, setContentLang] = useState<'en' | 'fr'>(lang);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const { data: existing, isPending, error } = useQuery({ queryKey: ['admin', 'lesson', lessonId], queryFn: () => api.get<LessonFull>(`/lessons/${lessonId}`), enabled: !!lessonId, staleTime: 0, gcTime: 0 });
 
@@ -92,11 +82,8 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
     if (!existing) return;
     setForm({
       type: existing.type,
-      title_en: existing.title_en,
       title_fr: existing.title_fr,
-      description_en: existing.description_en,
       description_fr: existing.description_fr,
-      content_en: existing.content_en,
       content_fr: existing.content_fr,
       videoUrl: existing.videoUrl ?? '',
       durationMinutes: existing.durationMinutes ? String(existing.durationMinutes) : '',
@@ -109,16 +96,13 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
     mutationFn: () => {
       const payload = {
         type: form.type,
-        title_en: form.title_en,
         title_fr: form.title_fr,
-        description_en: form.description_en,
         description_fr: form.description_fr,
-        content_en: form.content_en,
         content_fr: form.content_fr,
         videoUrl: form.videoUrl.trim() || null,
         durationMinutes: form.durationMinutes ? Number(form.durationMinutes) : null,
         // A resource needs both labels: if one language is empty we reuse the other.
-        resources: form.resources.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), fileType: r.fileType, size: r.size, title: { en: r.title.en || r.title.fr || r.url, fr: r.title.fr || r.title.en || r.url } })),
+        resources: form.resources.filter((r) => r.url.trim()).map((r) => ({ url: r.url.trim(), fileType: r.fileType, size: r.size, title: { fr: r.title.fr || r.url } })),
       };
       return lessonId ? api.put(`/lessons/${lessonId}`, payload) : api.post('/lessons', { ...payload, moduleId });
     },
@@ -136,7 +120,7 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
       try {
         const doc = await api.upload<{ url: string; size: number; fileType: DocumentType; name: string }>('/uploads/document', file);
         const label = doc.name.replace(/\.[^.]+$/, '');
-        setForm((f) => ({ ...f, resources: [...f.resources, { title: { en: label, fr: label }, url: doc.url, fileType: doc.fileType, size: doc.size }] }));
+        setForm((f) => ({ ...f, resources: [...f.resources, { title: { fr: label }, url: doc.url, fileType: doc.fileType, size: doc.size }] }));
       } catch (err) {
         setUploadError(`${file.name} — ${errors.message(err)}`);
       } finally {
@@ -146,13 +130,12 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
   };
 
   const submit = () => {
-    const issues = validate({ title_en: form.title_en, title_fr: form.title_fr, videoUrl: form.videoUrl }, { title_en: [rules.required], title_fr: [rules.required], videoUrl: [rules.optionalUrl] });
+    const issues = validate({ title_fr: form.title_fr, videoUrl: form.videoUrl }, { title_fr: [rules.required], videoUrl: [rules.optionalUrl] });
     const messages = Object.fromEntries(Object.entries(issues).map(([k, i]) => [k, errors.field({ field: k, ...i! })]));
     setFieldErrors(messages);
     if (!Object.keys(messages).length) save.mutate();
   };
 
-  const content = contentLang === 'en' ? form.content_en : form.content_fr;
   return (
     <Drawer open onClose={onClose} width="lg" title={lessonId ? t('admin.curriculum.editLesson') : t('admin.curriculum.newLesson')}
       footer={<><Button variant="secondary" onClick={onClose}>{t('common.cancel')}</Button><Button onClick={submit} loading={save.isPending} disabled={(!!lessonId && isPending) || uploading > 0}>{t('common.save')}</Button></>}>
@@ -165,24 +148,11 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
               {LESSON_TYPES.filter((x) => x !== 'QUIZ' || form.type === 'QUIZ').map((x) => <option key={x} value={x}>{t(`lessonType.${x}`)}</option>)}
             </Select>
           </Field>
-          <Pair>
-            <Field label={t('admin.curriculum.lessonTitleEn')} required error={fieldErrors.title_en}><Input value={form.title_en} onChange={(e) => set('title_en', e.target.value)} maxLength={200} data-autofocus /></Field>
-            <Field label={t('admin.curriculum.lessonTitleFr')} required error={fieldErrors.title_fr}><Input value={form.title_fr} onChange={(e) => set('title_fr', e.target.value)} maxLength={200} /></Field>
-          </Pair>
-          <Pair>
-            <Field label={t('admin.curriculum.lessonDescEn')} optionalLabel={t('common.optional')} error={fieldErrors.description_en}><Textarea rows={2} value={form.description_en} onChange={(e) => set('description_en', e.target.value)} maxLength={1000} /></Field>
-            <Field label={t('admin.curriculum.lessonDescFr')} optionalLabel={t('common.optional')} error={fieldErrors.description_fr}><Textarea rows={2} value={form.description_fr} onChange={(e) => set('description_fr', e.target.value)} maxLength={1000} /></Field>
-          </Pair>
-
-          <div>
-            <div className="mb-2 flex items-center justify-between gap-3">
-              <span className="text-sm font-medium text-slate-700">{t('admin.curriculum.content')}</span>
-              <Segmented size="sm" label={t('admin.curriculum.content')} value={contentLang} onChange={setContentLang} options={[{ value: 'en', label: `EN${form.content_en ? ' •' : ''}` }, { value: 'fr', label: `FR${form.content_fr ? ' •' : ''}` }]} />
-            </div>
-            <Field label={<span className="sr-only">{t('admin.curriculum.content')} ({contentLang.toUpperCase()})</span>} hint={t('admin.curriculum.contentHint')} error={fieldErrors[`content_${contentLang}`]}>
-              <Textarea key={contentLang} rows={14} value={content} onChange={(e) => set(contentLang === 'en' ? 'content_en' : 'content_fr', e.target.value)} className="font-mono text-[13px] leading-6" spellCheck />
-            </Field>
-          </div>
+          <Field label={t('admin.curriculum.lessonTitleFr')} required error={fieldErrors.title_fr}><Input value={form.title_fr} onChange={(e) => set('title_fr', e.target.value)} maxLength={200} data-autofocus /></Field>
+          <Field label={t('admin.curriculum.lessonDescFr')} optionalLabel={t('common.optional')} error={fieldErrors.description_fr}><Textarea rows={2} value={form.description_fr} onChange={(e) => set('description_fr', e.target.value)} maxLength={1000} /></Field>
+          <Field label={t('admin.curriculum.content')} hint={t('admin.curriculum.contentHint')} error={fieldErrors.content_fr}>
+            <Textarea rows={14} value={form.content_fr} onChange={(e) => set('content_fr', e.target.value)} className="font-mono text-[13px] leading-6" spellCheck lang="fr" />
+          </Field>
 
           <Pair>
             <Field label={t('admin.curriculum.video')} optionalLabel={t('common.optional')} hint={t('admin.curriculum.videoHint')} error={fieldErrors.videoUrl}><Input type="url" inputMode="url" value={form.videoUrl} onChange={(e) => set('videoUrl', e.target.value)} placeholder="https://" /></Field>
@@ -194,10 +164,7 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
             <div className="space-y-3">
               {form.resources.map((r, i) => (
                 <div key={i} className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <Field label={t('admin.curriculum.resourceTitleEn')}><Input value={r.title.en} onChange={(e) => set('resources', form.resources.map((x, j) => (j === i ? { ...x, title: { ...x.title, en: e.target.value } } : x)))} /></Field>
-                    <Field label={t('admin.curriculum.resourceTitleFr')}><Input value={r.title.fr} onChange={(e) => set('resources', form.resources.map((x, j) => (j === i ? { ...x, title: { ...x.title, fr: e.target.value } } : x)))} /></Field>
-                  </div>
+                  <Field label={t('admin.curriculum.resourceTitleFr')}><Input value={r.title.fr} onChange={(e) => set('resources', form.resources.map((x, j) => (j === i ? { ...x, title: { fr: e.target.value } } : x)))} /></Field>
                   <div className="mt-3 flex items-end gap-2">
                     {r.fileType ? (
                       <a href={r.url} target="_blank" rel="noopener noreferrer" className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-slate-200 bg-white p-2 hover:border-brand-300">
@@ -215,7 +182,7 @@ function LessonDrawer({ moduleId, lessonId, onClose, onSaved }: { moduleId: stri
               <div className="flex flex-wrap items-center gap-2">
                 <input ref={fileInput} type="file" multiple accept={DOCUMENT_ACCEPT} className="sr-only" tabIndex={-1} onChange={(e) => { uploadFiles(Array.from(e.target.files ?? [])); e.target.value = ''; }} />
                 <Button variant="secondary" size="sm" loading={uploading > 0} iconLeft={<FileUp className="h-4 w-4" aria-hidden />} onClick={() => fileInput.current?.click()}>{t('admin.curriculum.uploadFile')}</Button>
-                <Button variant="secondary" size="sm" iconLeft={<Plus className="h-4 w-4" aria-hidden />} onClick={() => set('resources', [...form.resources, { title: { en: '', fr: '' }, url: '', fileType: null, size: null }])}>{t('admin.curriculum.addResource')}</Button>
+                <Button variant="secondary" size="sm" iconLeft={<Plus className="h-4 w-4" aria-hidden />} onClick={() => set('resources', [...form.resources, { title: { fr: '' }, url: '', fileType: null, size: null }])}>{t('admin.curriculum.addResource')}</Button>
               </div>
               <p className="text-xs text-slate-500">{t('admin.curriculum.uploadHint')}</p>
               {uploadError && <p role="alert" className="text-xs font-medium text-rose-600">{uploadError}</p>}

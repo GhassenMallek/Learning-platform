@@ -32,6 +32,8 @@ import { DEFAULT_SITE } from '../services/engagement';
 import { accountingCourses } from './data/accounting';
 import { flutter } from './data/flutter';
 import { contentKeys, lessonBody, type SeedCourse } from './data/helpers';
+// The source data is bilingual; the site is French-only, so only the French side is stored.
+const frOnly = (v: { fr: string }) => ({ fr: v.fr });
 import { java } from './data/java';
 import { RESOURCES } from './data/resources';
 
@@ -58,12 +60,12 @@ async function seedSettings() {
 
 async function seedTaxonomy() {
   const categories = [
-    { slug: 'technology', name_en: 'Technology', name_fr: 'Technologie', description_en: 'Programming, software and digital skills.', description_fr: 'Programmation, logiciels et compétences numériques.', sortOrder: 10 },
-    { slug: 'accounting', name_en: 'Accounting', name_fr: 'Comptabilité', description_en: 'Accounting, taxation, audit and financial reporting.', description_fr: 'Comptabilité, fiscalité, audit et information financière.', sortOrder: 20 },
+    { slug: 'technology', name_fr: 'Technologie', description_fr: 'Programmation, logiciels et compétences numériques.', sortOrder: 10 },
+    { slug: 'accounting', name_fr: 'Comptabilité', description_fr: 'Comptabilité, fiscalité, audit et information financière.', sortOrder: 20 },
   ];
   const years = [
-    { slug: '2nd-year', name_en: '2nd Year', name_fr: '2e année', sortOrder: 20 },
-    { slug: '3rd-year', name_en: '3rd Year', name_fr: '3e année', sortOrder: 30 },
+    { slug: '2nd-year', name_fr: '2e année', sortOrder: 20 },
+    { slug: '3rd-year', name_fr: '3e année', sortOrder: 30 },
   ];
   const cat = new Map<string, unknown>();
   const year = new Map<string, unknown>();
@@ -86,11 +88,8 @@ async function seedCourses(tax: Awaited<ReturnType<typeof seedTaxonomy>>) {
     }
     const course = await Course.create({
       slug: c.slug,
-      title_en: c.title.en,
       title_fr: c.title.fr,
-      shortDescription_en: c.short.en,
       shortDescription_fr: c.short.fr,
-      description_en: c.description.en,
       description_fr: c.description.fr,
       category: tax.cat.get(c.category),
       academicYear: c.year ? tax.year.get(c.year) : null,
@@ -103,18 +102,16 @@ async function seedCourses(tax: Awaited<ReturnType<typeof seedTaxonomy>>) {
       sortOrder: (index + 1) * 10,
       status: 'PUBLISHED',
       publishedAt: new Date(),
-      objectives: c.objectives,
-      audience: c.audience,
-      skills: c.skills,
-      faq: c.faq.map((f) => ({ question: f.q, answer: f.a })),
-      project: c.project ?? null,
+      objectives: c.objectives.map(frOnly),
+      audience: c.audience.map(frOnly),
+      skills: c.skills.map(frOnly),
+      faq: c.faq.map((f) => ({ question: frOnly(f.q), answer: frOnly(f.a) })),
+      project: c.project ? { title: frOnly(c.project.title), description: frOnly(c.project.description) } : null,
     });
     for (const [mi, m] of c.modules.entries()) {
       const moduleDoc = await CourseModule.create({
         course: course._id,
-        title_en: m.title.en,
         title_fr: m.title.fr,
-        description_en: m.description.en,
         description_fr: m.description.fr,
         order: mi,
       });
@@ -129,14 +126,11 @@ async function seedCourses(tax: Awaited<ReturnType<typeof seedTaxonomy>>) {
             module: moduleDoc._id,
             course: course._id,
             type: ls.type,
-            title_en: ls.title.en,
             title_fr: ls.title.fr,
-            description_en: ls.description.en,
             description_fr: ls.description.fr,
-            content_en: body.en,
             content_fr: body.fr,
             durationMinutes: ls.minutes,
-            resources: RESOURCES[`${c.slug}|${ls.title.en}`] ?? [],
+            resources: (RESOURCES[`${c.slug}|${ls.title.en}`] ?? []).map((r) => ({ ...r, title: frOnly(r.title) })),
             order: li,
           };
         }),
@@ -206,16 +200,16 @@ async function seedDemo() {
   log('✔ demo enrollments with real lesson progress');
 
   if (await ContactMessage.estimatedDocumentCount()) return log('• contact requests already exist');
-  const course = async (slug: string) => Course.findOne({ slug }).select('title_en title_fr');
+  const course = async (slug: string) => Course.findOne({ slug }).select('title_fr');
   const hours = (h: number) => new Date(Date.now() - h * 3600_000);
   const [fl, ifrsC, tax, audit] = await Promise.all([course('flutter-development'), course('ifrs'), course('taxation-irpp-is'), course('financial-audit')]);
   await ContactMessage.insertMany([
     { fullName: 'Leila Mansouri', email: 'leila.mansouri@example.com', phone: '+216 22 456 789', course: fl?._id, courseTitle: fl?.title_fr, locale: 'fr', message: "Bonjour, je souhaite connaître les prochaines dates de démarrage de la formation Flutter ainsi que les modalités d'inscription. Merci !", status: 'NEW', createdAt: hours(2) },
-    { fullName: 'Nour Haddad', email: 'nour.haddad@example.com', phone: null, course: null, courseTitle: null, locale: 'en', message: 'I would like to receive the full programme of your 2nd-year accounting courses, including the schedule.', status: 'NEW', createdAt: hours(5) },
-    { fullName: 'John Carter', email: 'j.carter@example.com', phone: null, course: ifrsC?._id, courseTitle: ifrsC?.title_en, locale: 'en', message: 'Hello, is the IFRS course suitable for someone with two years of audit experience? Do you offer evening sessions?', status: 'NEW', createdAt: hours(26) },
+    { fullName: 'Nour Haddad', email: 'nour.haddad@example.com', phone: null, course: null, courseTitle: null, locale: 'fr', message: 'Je souhaiterais recevoir le programme complet de vos cours de comptabilité de 2e année, avec le calendrier.', status: 'NEW', createdAt: hours(5) },
+    { fullName: 'John Carter', email: 'j.carter@example.com', phone: null, course: ifrsC?._id, courseTitle: ifrsC?.title_fr, locale: 'fr', message: 'Bonjour, la formation IFRS convient-elle à une personne ayant deux ans d’expérience en audit ? Proposez-vous des séances le soir ?', status: 'NEW', createdAt: hours(26) },
     { fullName: 'Sarra Trabelsi', email: 'sarra.trabelsi@example.com', phone: '+216 55 987 654', course: audit?._id, courseTitle: audit?.title_fr, locale: 'fr', message: "Bonjour, je suis déjà inscrite en Comptabilité Intermédiaire I. Puis-je aussi m'inscrire au cours d'Audit Financier ?", status: 'NEW', createdAt: hours(30) },
     { fullName: 'Mehdi Karray', email: 'mehdi.karray@example.com', phone: '+216 98 765 432', course: tax?._id, courseTitle: tax?.title_fr, locale: 'fr', message: 'Bonjour, proposez-vous des cas pratiques corrigés pour la partie IRPP ?', status: 'READ', readAt: hours(60), createdAt: hours(72) },
-    { fullName: 'Karim Jlassi', email: 'karim.jlassi@example.com', phone: null, course: null, courseTitle: null, locale: 'en', message: 'Thanks, I found the information I needed on the website.', status: 'ARCHIVED', readAt: hours(120), createdAt: hours(130) },
+    { fullName: 'Karim Jlassi', email: 'karim.jlassi@example.com', phone: null, course: null, courseTitle: null, locale: 'fr', message: 'Merci, j’ai trouvé les informations dont j’avais besoin sur le site.', status: 'ARCHIVED', readAt: hours(120), createdAt: hours(130) },
   ]);
   log('✔ demo contact requests');
 }

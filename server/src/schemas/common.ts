@@ -74,8 +74,8 @@ export const optDate = z
   .nullish()
   .transform((v) => (v === undefined ? undefined : v ? new Date(v) : null));
 
-/** `{ en, fr }` pair where both languages are mandatory. */
-export const pair = (max: number) => z.object({ en: reqStr(max), fr: reqStr(max) });
+/** Localized text: the site is French-only, so only `fr` is accepted (stored in the `{ en, fr }` sub-document). */
+export const pair = (max: number) => z.object({ fr: reqStr(max) });
 
 export const paginationQuery = z.object({
   page: z.coerce.number().int().min(1).max(100000).default(1),

@@ -49,7 +49,7 @@ export default function Courses() {
       if (category && c.category.id !== category && c.category.slug !== category) return false;
       if (level && c.level !== level) return false;
       if (!needle) return true;
-      return normalize([c.title_en, c.title_fr, c.shortDescription_en, c.shortDescription_fr].join(' ')).includes(needle);
+      return normalize([c.title_fr, c.shortDescription_fr].join(' ')).includes(needle);
     });
   }, [courses, q, category, level]);
 

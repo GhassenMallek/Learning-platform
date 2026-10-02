@@ -100,9 +100,9 @@ describe('document uploads', () => {
     const lessonId = String(lessons[0]._id);
     const upload = async (name: string) => (await admin.post('/api/uploads/document').attach('file', PDF, name)).body.data;
     const [a, b] = [await upload('a.pdf'), await upload('b.pdf')];
-    const resource = (f: { url: string; size: number }, title: string) => ({ title: { en: title, fr: title }, url: f.url, fileType: 'pdf', size: f.size });
+    const resource = (f: { url: string; size: number }, title: string) => ({ title: { fr: title }, url: f.url, fileType: 'pdf', size: f.size });
 
-    let res = await admin.put(`/api/lessons/${lessonId}`).send({ resources: [resource(a, 'A'), resource(b, 'B'), { title: { en: 'Docs', fr: 'Docs' }, url: 'https://example.com' }] });
+    let res = await admin.put(`/api/lessons/${lessonId}`).send({ resources: [resource(a, 'A'), resource(b, 'B'), { title: { fr: 'Docs' }, url: 'https://example.com' }] });
     expect(res.status).toBe(200);
     expect(res.body.data.resources[0]).toMatchObject({ fileType: 'pdf', size: PDF.length });
     expect(res.body.data.resources[2]).toMatchObject({ fileType: null, size: null });
@@ -130,26 +130,26 @@ describe('end-to-end business flow', () => {
     const category = await makeCategory('technology');
 
     // 1. Admin creates a brand-new course (nothing hard-coded: "Python for Beginners").
-    const course = (await admin.post('/api/courses').send({ title_en: 'Python for Beginners', title_fr: 'Python pour débutants', category: category.id, level: 'BEGINNER', durationValue: 6, durationUnit: 'WEEKS' })).body.data;
+    const course = (await admin.post('/api/courses').send({ title_fr: 'Python pour débutants', category: category.id, level: 'BEGINNER', durationValue: 6, durationUnit: 'WEEKS' })).body.data;
     await admin.put(`/api/courses/${course.id}`).send({
-      shortDescription_en: 'Learn Python.', shortDescription_fr: 'Apprenez Python.', description_en: 'Long text.', description_fr: 'Texte long.',
-      objectives: [{ en: 'Write scripts', fr: 'Écrire des scripts' }], skills: [{ en: 'Python', fr: 'Python' }],
-      faq: [{ question: { en: 'Prerequisites?', fr: 'Prérequis ?' }, answer: { en: 'None.', fr: 'Aucun.' } }],
+      shortDescription_fr: 'Apprenez Python.', description_fr: 'Texte long.',
+      objectives: [{ fr: 'Écrire des scripts' }], skills: [{ fr: 'Python' }],
+      faq: [{ question: { fr: 'Prérequis ?' }, answer: { fr: 'Aucun.' } }],
     });
-    const mod = (await admin.post('/api/modules').send({ courseId: course.id, title_en: 'Basics', title_fr: 'Bases' })).body.data;
+    const mod = (await admin.post('/api/modules').send({ courseId: course.id, title_fr: 'Bases' })).body.data;
     const lessonIds: string[] = [];
     for (const n of [1, 2, 3, 4]) {
-      lessonIds.push((await admin.post('/api/lessons').send({ moduleId: mod.id, title_en: `Lesson ${n}`, title_fr: `Leçon ${n}`, content_en: `Body ${n}`, content_fr: `Corps ${n}` })).body.data.id);
+      lessonIds.push((await admin.post('/api/lessons').send({ moduleId: mod.id, title_fr: `Leçon ${n}`, content_fr: `Corps ${n}` })).body.data.id);
     }
 
     // 2. Not public until published.
     expect((await client().get('/api/courses')).body.data).toHaveLength(0);
     expect((await admin.patch(`/api/courses/${course.id}/publish`)).status).toBe(200);
     const listed = (await client().get('/api/courses?status=PUBLISHED')).body.data;
-    expect(listed.map((c: { title_en: string }) => c.title_en)).toEqual(['Python for Beginners']);
+    expect(listed.map((c: { title_fr: string }) => c.title_fr)).toEqual(['Python pour débutants']);
 
     // 3. A visitor asks for information; the request lands in the admin inbox.
-    expect((await client().post('/api/contact').send({ fullName: 'Nour Haddad', email: 'nour@example.com', message: 'Is there an evening class?', courseId: course.id, locale: 'en' })).status).toBe(201);
+    expect((await client().post('/api/contact').send({ fullName: 'Nour Haddad', email: 'nour@example.com', message: 'Y a-t-il un cours du soir ?', courseId: course.id, locale: 'fr' })).status).toBe(201);
     const inbox = (await admin.get('/api/contact')).body;
     expect(inbox.data).toHaveLength(1);
     expect(inbox.meta.counts.NEW).toBe(1);

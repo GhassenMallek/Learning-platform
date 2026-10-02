@@ -14,11 +14,11 @@ import { rules, validate, type Issue } from '@/lib/validation';
 const empty = { fullName: '', email: '', phone: '', courseId: '', message: '', website: '' };
 
 export function ContactInfo() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { data: site } = useSiteSettings();
   if (!site) return null;
-  const address = (lang === 'fr' ? site.address_fr || site.address_en : site.address_en || site.address_fr).trim();
-  const hours = (lang === 'fr' ? site.hours_fr || site.hours_en : site.hours_en || site.hours_fr).trim();
+  const address = site.address_fr.trim();
+  const hours = site.hours_fr.trim();
   const whatsapp = site.whatsapp.replace(/[^\d]/g, '');
   const items = [
     site.email && { icon: Mail, label: t('contact.emailUs'), value: site.email, href: `mailto:${site.email}` },

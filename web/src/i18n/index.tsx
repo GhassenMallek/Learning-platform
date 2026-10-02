@@ -1,11 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { ApiError, type FieldIssue } from '@/lib/api';
 import type { DurationUnit, Lang, Localized } from '@/lib/types';
-import { en } from './en';
 import { fr } from './fr';
 
-const dictionaries = { en, fr } as const;
-type Dict = typeof en;
+type Dict = typeof fr;
 
 type Leaves<T, P extends string = ''> = {
   [K in keyof T & string]: T[K] extends string ? `${P}${K}` : Leaves<T[K], `${P}${K}.`>;
@@ -16,18 +14,8 @@ type StripPlural<K extends string> = K extends `${infer B}_one` ? B : never;
 export type TKey = LeafKey | StripPlural<LeafKey>;
 export type TFunction = (key: TKey, vars?: Record<string, string | number>) => string;
 
-const STORAGE_KEY = 'lc.lang';
-const LOCALES: Record<Lang, string> = { en: 'en-GB', fr: 'fr-FR' };
-
-function detectLang(): Lang {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'en' || saved === 'fr') return saved;
-  } catch {
-    /* storage unavailable (private mode) — fall through */
-  }
-  return navigator.language?.toLowerCase().startsWith('fr') ? 'fr' : 'en';
-}
+const LANG: Lang = 'fr';
+const LOCALE = 'fr-FR';
 
 const lookup = (dict: unknown, key: string): string | undefined =>
   key.split('.').reduce<unknown>((node, part) => (node as Record<string, unknown> | undefined)?.[part], dict) as string | undefined;
@@ -46,47 +34,24 @@ export interface Formatters {
 interface I18nValue {
   lang: Lang;
   locale: string;
-  setLang: (lang: Lang) => void;
   t: TFunction;
-  /** `pick(course, 'title')` → `title_en` / `title_fr` for the active language, falling back to the other one when empty. */
+  /** `pick(course, 'title')` → `course.title_fr`. */
   pick: (obj: object | null | undefined, field: string) => string;
-  /** Same for embedded `{ en, fr }` pairs. */
+  /** Same for embedded `{ fr }` pairs. */
   pair: (value: Localized | null | undefined) => string;
   fmt: Formatters;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
 
-/**
- * `forcedLang` renders a subtree in a fixed language without touching the user's preference or `<html lang>` —
- * used by the admin course preview ("see this page in French").
- */
-export function I18nProvider({ children, forcedLang }: { children: ReactNode; forcedLang?: Lang }) {
-  const [stored, setLangState] = useState<Lang>(detectLang);
-  const lang = forcedLang ?? stored;
-  const locale = LOCALES[lang];
-
-  useEffect(() => {
-    if (!forcedLang) document.documentElement.lang = lang;
-  }, [lang, forcedLang]);
-
-  const setLang = useCallback(
-    (next: Lang) => {
-      if (forcedLang) return;
-      setLangState(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        /* ignore */
-      }
-    },
-    [forcedLang],
-  );
+/** The site is French-only: `<html lang="fr">` is set in index.html and every string comes from `fr`. */
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const lang = LANG;
+  const locale = LOCALE;
 
   const value = useMemo<I18nValue>(() => {
-    const dict = dictionaries[lang];
+    const dict = fr;
     const plural = new Intl.PluralRules(locale);
-    const other: Lang = lang === 'en' ? 'fr' : 'en';
 
     const t: TFunction = (key, vars) => {
       let raw: string | undefined;
@@ -94,7 +59,7 @@ export function I18nProvider({ children, forcedLang }: { children: ReactNode; fo
         const rule = plural.select(vars.count);
         raw = lookup(dict, `${key}_${rule}`) ?? lookup(dict, `${key}_other`);
       }
-      raw ??= lookup(dict, key) ?? lookup(en, key) ?? key;
+      raw ??= lookup(dict, key) ?? key;
       return raw.replace(/\{(\w+)\}/g, (_, name: string) => String(vars?.[name] ?? `{${name}}`));
     };
 
@@ -139,16 +104,12 @@ export function I18nProvider({ children, forcedLang }: { children: ReactNode; fo
     return {
       lang,
       locale,
-      setLang,
       t,
-      pick: (obj, field) => {
-        const rec = (obj ?? {}) as Record<string, unknown>;
-        return String(rec[`${field}_${lang}`] || rec[`${field}_${other}`] || '');
-      },
-      pair: (p) => p?.[lang] || p?.[other] || '',
+      pick: (obj, field) => String(((obj ?? {}) as Record<string, unknown>)[`${field}_fr`] || ''),
+      pair: (p) => p?.fr || '',
       fmt,
     };
-  }, [lang, locale, setLang]);
+  }, [lang, locale]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
@@ -164,7 +125,7 @@ export function useErrorText() {
   const { t } = useI18n();
   return useMemo(() => {
     const field = (issue: FieldIssue) => t(`errors.fields.${issue.code}` as TKey, { min: issue.min ?? '', max: issue.max ?? '' });
-    const hasKey = (key: string) => lookup(en, key) !== undefined;
+    const hasKey = (key: string) => lookup(fr, key) !== undefined;
     return {
       field,
       message: (error: unknown): string => {

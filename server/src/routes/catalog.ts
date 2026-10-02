@@ -42,7 +42,7 @@ function taxonomyRouter(opts: {
     const { withCourses } = parse(z.object({ withCourses: z.stringbool().optional() }), req.query);
     const admin = isAdmin(req);
     const [items, counts] = await Promise.all([
-      model.find().sort({ sortOrder: 1, name_en: 1 }),
+      model.find().sort({ sortOrder: 1, name_fr: 1 }),
       Course.aggregate([
         { $match: { [courseField]: { $ne: null }, ...(admin ? {} : { status: 'PUBLISHED' }) } },
         { $group: { _id: `$${courseField}`, n: { $sum: 1 } } },
@@ -58,7 +58,7 @@ function taxonomyRouter(opts: {
   r.post('/', ...adminOnly, async (req, res) => {
     const input = parse(opts.createSchema, req.body);
     if (input.slug && (await model.exists({ slug: input.slug }))) throw conflict('SLUG_TAKEN', 'This slug is already used');
-    const slug = input.slug ?? (await uniqueSlug(model, input.name_en));
+    const slug = input.slug ?? (await uniqueSlug(model, input.name_fr));
     const last = await model.findOne().sort({ sortOrder: -1 }).select('sortOrder');
     const created = await model.create({ sortOrder: (last?.sortOrder ?? 0) + 10, ...input, slug });
     send(res, created.toJSON(), undefined, 201);

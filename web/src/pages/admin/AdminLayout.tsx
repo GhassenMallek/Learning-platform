@@ -2,7 +2,7 @@ import { BookOpen, ExternalLink, FolderTree, GraduationCap, Inbox, LayoutDashboa
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthProvider';
-import { LangSwitcher, Logo } from '@/components/brand';
+import { Logo } from '@/components/brand';
 import { Menu } from '@/components/ui/overlays';
 import { Avatar } from '@/components/ui/primitives';
 import { useI18n, type TKey } from '@/i18n';
@@ -129,7 +129,6 @@ export function AdminLayout() {
           </button>
           <div className="lg:hidden"><Logo to="/admin" showName={false} /></div>
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
-            <LangSwitcher />
             <Link to="/" target="_blank" className="hidden h-9 items-center gap-1.5 rounded-lg px-3 text-sm font-medium text-slate-600 hover:bg-slate-100 sm:inline-flex"><ExternalLink className="h-4 w-4" aria-hidden />{t('admin.nav.viewSite')}</Link>
             {user && (
               <div className="flex items-center gap-2">

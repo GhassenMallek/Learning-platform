@@ -1,7 +1,6 @@
-/** API contract (mirrors server responses). Bilingual fields follow the `<field>_en` / `<field>_fr` convention. */
-export type Lang = 'en' | 'fr';
+/** API contract (mirrors server responses). The site is French-only: text fields are `<field>_fr` and `{ fr }`. */
+export type Lang = 'fr';
 export interface Localized {
-  en: string;
   fr: string;
 }
 
@@ -31,14 +30,11 @@ export interface Account {
 
 export interface SiteSettings {
   name: string;
-  tagline_en: string;
   tagline_fr: string;
   email: string;
   phone: string;
   whatsapp: string;
-  address_en: string;
   address_fr: string;
-  hours_en: string;
   hours_fr: string;
   currency: string;
   social: { facebook: string; instagram: string; linkedin: string; youtube: string };
@@ -55,9 +51,7 @@ export interface PublicStats {
 export interface Category {
   id: string;
   slug: string;
-  name_en: string;
   name_fr: string;
-  description_en: string;
   description_fr: string;
   sortOrder: number;
   courseCount?: number;
@@ -66,21 +60,18 @@ export interface Category {
 export interface AcademicYear {
   id: string;
   slug: string;
-  name_en: string;
   name_fr: string;
   sortOrder: number;
   courseCount?: number;
 }
 
-export type CategoryRef = Pick<Category, 'id' | 'slug' | 'name_en' | 'name_fr' | 'sortOrder'>;
-export type YearRef = Pick<AcademicYear, 'id' | 'slug' | 'name_en' | 'name_fr' | 'sortOrder'>;
+export type CategoryRef = Pick<Category, 'id' | 'slug' | 'name_fr' | 'sortOrder'>;
+export type YearRef = Pick<AcademicYear, 'id' | 'slug' | 'name_fr' | 'sortOrder'>;
 
 export interface CourseListItem {
   id: string;
   slug: string;
-  title_en: string;
   title_fr: string;
-  shortDescription_en: string;
   shortDescription_fr: string;
   category: CategoryRef;
   academicYear: YearRef | null;
@@ -106,9 +97,7 @@ export interface LessonOutline {
   id: string;
   order: number;
   type: LessonType;
-  title_en: string;
   title_fr: string;
-  description_en?: string;
   description_fr?: string;
   durationMinutes: number | null;
 }
@@ -116,9 +105,7 @@ export interface LessonOutline {
 export interface ModuleOutline {
   id: string;
   order: number;
-  title_en: string;
   title_fr: string;
-  description_en: string;
   description_fr: string;
   lessons: LessonOutline[];
 }
@@ -135,7 +122,6 @@ export interface ReadinessIssue {
 }
 
 export interface CourseDetail extends CourseListItem {
-  description_en: string;
   description_fr: string;
   objectives: Localized[];
   audience: Localized[];
@@ -162,11 +148,8 @@ export interface LessonFull {
   module: string;
   course: string;
   type: LessonType;
-  title_en: string;
   title_fr: string;
-  description_en: string;
   description_fr: string;
-  content_en: string;
   content_fr: string;
   videoUrl: string | null;
   durationMinutes: number | null;
@@ -200,7 +183,7 @@ export interface Progress {
 
 export type CourseCard = Pick<
   CourseListItem,
-  'id' | 'slug' | 'title_en' | 'title_fr' | 'shortDescription_en' | 'shortDescription_fr' | 'thumbnail' | 'level' | 'durationValue' | 'durationUnit' | 'status'
+  'id' | 'slug' | 'title_fr' | 'shortDescription_fr' | 'thumbnail' | 'level' | 'durationValue' | 'durationUnit' | 'status'
 > & { category?: CategoryRef; academicYear?: YearRef | null };
 
 export interface Enrollment {
@@ -223,7 +206,7 @@ export interface ContactMessage {
   fullName: string;
   email: string;
   phone: string | null;
-  course: { id: string; slug: string; title_en: string; title_fr: string; status: CourseStatus } | string | null;
+  course: { id: string; slug: string; title_fr: string; status: CourseStatus } | string | null;
   courseTitle: string | null;
   message: string;
   locale: Lang;
@@ -238,7 +221,7 @@ export interface StudentCourse {
   enrollment: { id: string; status: EnrollmentStatus; enrolledAt: string };
   course: CourseCard;
   progress: Progress;
-  nextLesson: { id: string; moduleId: string; title_en: string; title_fr: string } | null;
+  nextLesson: { id: string; moduleId: string; title_fr: string } | null;
   lastActivityAt: string | null;
 }
 
@@ -246,7 +229,7 @@ export interface StudentDashboard {
   profile: Student;
   stats: { courses: number; inProgress: number; completedCourses: number; lessonsCompleted: number };
   courses: StudentCourse[];
-  continueLearning: { courseId: string; lesson: { id: string; title_en: string; title_fr: string } } | null;
+  continueLearning: { courseId: string; lesson: { id: string; title_fr: string } } | null;
 }
 
 export interface StudentOutlineLesson extends LessonOutline {
@@ -259,18 +242,18 @@ export interface StudentOutlineModule extends Omit<ModuleOutline, 'lessons'> {
 }
 export interface StudentCourseOutline {
   enrollment: { id: string; status: EnrollmentStatus; enrolledAt: string };
-  course: Pick<CourseDetail, 'id' | 'slug' | 'title_en' | 'title_fr' | 'shortDescription_en' | 'shortDescription_fr' | 'description_en' | 'description_fr' | 'thumbnail' | 'level' | 'category' | 'academicYear' | 'durationValue' | 'durationUnit'>;
+  course: Pick<CourseDetail, 'id' | 'slug' | 'title_fr' | 'shortDescription_fr' | 'description_fr' | 'thumbnail' | 'level' | 'category' | 'academicYear' | 'durationValue' | 'durationUnit'>;
   progress: Progress;
-  nextLesson: { id: string; moduleId: string; title_en: string; title_fr: string; completed: boolean } | null;
+  nextLesson: { id: string; moduleId: string; title_fr: string; completed: boolean } | null;
   modules: StudentOutlineModule[];
 }
 
 export interface StudentLessonPayload {
   lesson: LessonFull & { completed: boolean };
-  module: { id: string; title_en: string; title_fr: string; order: number };
-  course: { id: string; slug: string; title_en: string; title_fr: string };
-  previous: { id: string; title_en: string; title_fr: string } | null;
-  next: { id: string; title_en: string; title_fr: string } | null;
+  module: { id: string; title_fr: string; order: number };
+  course: { id: string; slug: string; title_fr: string };
+  previous: { id: string; title_fr: string } | null;
+  next: { id: string; title_fr: string } | null;
   progress: Progress;
 }
 
@@ -280,6 +263,6 @@ export interface AdminOverview {
     students: (Pick<Student, 'id' | 'firstName' | 'lastName' | 'status' | 'profilePhotoUrl' | 'createdAt'> & { email: string })[];
     contactRequests: ContactMessage[];
     enrollments: { id: string; createdAt: string; enrolledAt: string; student: Pick<Student, 'id' | 'firstName' | 'lastName' | 'profilePhotoUrl'>; course: CourseCard }[];
-    courses: { id: string; slug: string; title_en: string; title_fr: string; status: CourseStatus; thumbnail: string | null; category: CategoryRef; createdAt: string }[];
+    courses: { id: string; slug: string; title_fr: string; status: CourseStatus; thumbnail: string | null; category: CategoryRef; createdAt: string }[];
   };
 }

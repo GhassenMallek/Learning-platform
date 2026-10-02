@@ -11,7 +11,6 @@ export interface ActionCourse {
   id: string;
   slug: string;
   status: CourseStatus;
-  title_en: string;
   title_fr: string;
 }
 

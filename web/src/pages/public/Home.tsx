@@ -207,8 +207,7 @@ function Faq() {
 
 export default function Home() {
   const { data: site } = useSiteSettings();
-  const { lang } = useI18n();
-  useDocumentTitle(site ? `${site.name} — ${lang === 'fr' ? site.tagline_fr : site.tagline_en}` : undefined);
+  useDocumentTitle(site ? `${site.name} — ${site.tagline_fr}` : undefined);
   return (
     <>
       <Hero />

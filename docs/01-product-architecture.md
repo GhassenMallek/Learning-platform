@@ -98,7 +98,7 @@ erDiagram
 
 ## 6. Lifecycles
 
-- **Course**: `DRAFT → PUBLISHED ⇄ DRAFT (unpublish) → ARCHIVED`. Publishing runs a *readiness check* (bilingual titles & short descriptions, description, category, ≥ 1 module, ≥ 1 lesson, every module/lesson titled in both languages) and returns `422 COURSE_NOT_PUBLISHABLE` with the failing items. Only `PUBLISHED` reaches the public site. Unpublishing or archiving hides the course and stops *new* enrollments, but students who are already enrolled keep their access (to cut access, cancel the enrollment). A course that has enrollments can never be deleted — archive it.
+- **Course**: `DRAFT → PUBLISHED ⇄ DRAFT (unpublish) → ARCHIVED`. Publishing runs a *readiness check* (French title & short description, description, category, ≥ 1 module, ≥ 1 lesson, every module/lesson titled in both languages) and returns `422 COURSE_NOT_PUBLISHABLE` with the failing items. Only `PUBLISHED` reaches the public site. Unpublishing or archiving hides the course and stops *new* enrollments, but students who are already enrolled keep their access (to cut access, cancel the enrollment). A course that has enrollments can never be deleted — archive it.
 - **Enrollment**: created by admin for a `PUBLISHED` course and an `ACTIVE` student (`ACTIVE`); admin may set `COMPLETED` / `CANCELLED` (cancelled ⇒ access suspended) or delete it. Duplicate (student, course) pairs are impossible (unique index).
 - **Contact request**: `NEW → READ ⇄ NEW (unread) → ARCHIVED`; optionally linked to a student.
 

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { homeFor, useAuth } from '@/auth/AuthProvider';
-import { LangSwitcher, Logo } from '@/components/brand';
+import { Logo } from '@/components/brand';
 import { buttonClass } from '@/components/ui/primitives';
 import { useI18n } from '@/i18n';
 import { useSiteSettings } from '@/lib/queries';
@@ -52,7 +52,6 @@ function Header() {
           </nav>
         </div>
         <div className="hidden items-center gap-3 md:flex">
-          <LangSwitcher />
           {account ?? (
             <>
               <Link to="/login" className={buttonClass({ variant: 'ghost', size: 'sm' })}>{t('nav.login')}</Link>
@@ -61,7 +60,6 @@ function Header() {
           )}
         </div>
         <div className="flex items-center gap-2 md:hidden">
-          <LangSwitcher />
           <button type="button" aria-expanded={open} aria-controls="mobile-nav" aria-label={open ? t('common.closeMenu') : t('common.openMenu')} onClick={() => setOpen((v) => !v)} className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-slate-700">
             {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
           </button>
@@ -96,10 +94,10 @@ function Header() {
 }
 
 function Footer() {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const { data: site } = useSiteSettings();
   const social = Object.entries(site?.social ?? {}).filter(([, url]) => url);
-  const address = lang === 'fr' ? site?.address_fr || site?.address_en : site?.address_en || site?.address_fr;
+  const address = site?.address_fr;
   return (
     <footer className="border-t border-slate-200 bg-slate-50">
       <div className="container-page grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">

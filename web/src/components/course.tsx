@@ -22,7 +22,7 @@ const paletteIndex = (slug: string) => (slug === 'technology' ? 0 : slug === 'ac
 export const categoryTone = (slug: string): Tone => BADGE_TONES[paletteIndex(slug)];
 
 /** Generated cover for courses without an uploaded thumbnail — always looks intentional, never a grey box. */
-export function CourseCover({ course, className }: { course: Pick<CourseListItem, 'slug' | 'title_en' | 'thumbnail'> & { category?: CategoryRef }; className?: string }) {
+export function CourseCover({ course, className }: { course: Pick<CourseListItem, 'slug' | 'thumbnail'> & { category?: CategoryRef }; className?: string }) {
   const gid = useId();
   if (course.thumbnail) {
     return <img src={course.thumbnail} alt="" loading="lazy" className={cn('h-full w-full object-cover', className)} />;

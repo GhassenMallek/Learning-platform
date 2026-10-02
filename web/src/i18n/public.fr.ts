@@ -1,6 +1,4 @@
-import type { publicEn } from './public.en';
-
-export const publicFr: typeof publicEn = {
+export const publicFr = {
   nav: {
     courses: 'Formations',
     about: 'À propos',
@@ -12,7 +10,7 @@ export const publicFr: typeof publicEn = {
     main: 'Navigation principale',
   },
   hero: {
-    badge: 'Disponible en français et en anglais',
+    badge: 'Des formations 100 % en français',
     title: 'Apprenez. Construisez. Maîtrisez.',
     subtitle: 'Des formations pratiques en technologie, programmation, comptabilité et compétences professionnelles.',
     text: 'Développez de vraies compétences grâce à des cours structurés, des projets pratiques et un apprentissage encadré par des experts.',
@@ -72,8 +70,8 @@ export const publicFr: typeof publicEn = {
     title: 'Vos questions, nos réponses',
     q1: 'Comment m’inscrire à une formation ?',
     a1: 'Envoyez-nous une demande depuis la page Contact ou depuis n’importe quelle formation. Nous vous recontactons pour les prochaines étapes et créons votre compte étudiant.',
-    q2: 'Les formations sont-elles disponibles en français et en anglais ?',
-    a2: 'Oui. Toute la plateforme, y compris le contenu des cours, est disponible dans les deux langues.',
+    q2: 'Dans quelle langue se déroulent les formations ?',
+    a2: 'En français. Toute la plateforme et l’ensemble du contenu des cours sont rédigés en français.',
     q3: 'Puis-je suivre une formation à mon rythme ?',
     a3: 'Oui. Une fois inscrit, vous accédez aux modules et aux leçons depuis votre espace étudiant, et votre progression est enregistrée automatiquement.',
     q4: 'Proposez-vous des formations pour débutants ?',
@@ -121,8 +119,8 @@ export const publicFr: typeof publicEn = {
     duration: 'Durée',
     price: 'Tarif',
     content: 'Contenu',
-    languages: 'Langues',
-    languagesValue: 'Français · English',
+    languages: 'Langue',
+    languagesValue: 'Français',
     learnTitle: 'Ce que vous allez apprendre',
     programTitle: 'Programme de la formation',
     programSummary: '{modules} · {lessons}',
@@ -137,13 +135,12 @@ export const publicFr: typeof publicEn = {
     ctaTitle: 'Prêt à commencer votre apprentissage ?',
     ctaText: 'Envoyez-nous une demande et nous vous guiderons pour l’inscription.',
     aboutTitle: 'À propos de cette formation',
-    previewLanguage: 'Langue de l’aperçu',
   },
   about: {
     title: 'Un centre d’apprentissage tourné vers la pratique',
     lead: 'Nous aidons étudiants et professionnels à acquérir des compétences utiles au travail — grâce à des programmes structurés, des exemples concrets et un accompagnement personnel.',
     missionTitle: 'Notre mission',
-    missionText: 'Rendre l’apprentissage professionnel clair, pratique et accessible en français comme en anglais. Chaque formation est organisée en modules et en leçons : vous savez toujours où vous en êtes et ce qui vient ensuite.',
+    missionText: 'Rendre l’apprentissage professionnel clair, pratique et accessible à tous. Chaque formation est organisée en modules et en leçons : vous savez toujours où vous en êtes et ce qui vient ensuite.',
     approachTitle: 'Notre façon d’enseigner',
     approach1Title: 'Les fondamentaux d’abord',
     approach1Text: 'Nous commençons par les notions dont tout le reste dépend, puis nous montons en puissance vers les sujets avancés.',
@@ -155,7 +152,7 @@ export const publicFr: typeof publicEn = {
     value1: 'La clarté plutôt que le jargon',
     value2: 'La qualité plutôt que la quantité',
     value3: 'Le respect de votre temps',
-    value4: 'Bilingue par conception',
+    value4: 'Accessible à tous',
     visitTitle: 'Nous rendre visite ou nous écrire',
   },
   contact: {

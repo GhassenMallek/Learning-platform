@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { DataTable, EmptyState, ErrorState, PageHeader, Pagination, StatusBadge, type Column } from '@/components/ui/data';
 import { Drawer, Modal, useToast } from '@/components/ui/overlays';
-import { Avatar, Badge, Button, Checkbox, Input, Skeleton, Tabs } from '@/components/ui/primitives';
+import { Avatar, Button, Checkbox, Input, Skeleton, Tabs } from '@/components/ui/primitives';
 import { useErrorText, useI18n } from '@/i18n';
 import { api } from '@/lib/api';
 import { useDebouncedValue, useDocumentTitle } from '@/lib/hooks';
@@ -92,7 +92,6 @@ function MessageDrawer({ id, onClose, onChanged }: { id: string; onClose: () => 
           <dl className="grid grid-cols-2 gap-4 rounded-xl bg-slate-50 p-4 text-sm">
             <div className="col-span-2 sm:col-span-1"><dt className="text-xs font-medium uppercase tracking-wide text-slate-400">{t('admin.messages.detail.course')}</dt><dd className="mt-0.5 font-medium text-slate-900">{course ? <Link to={`/admin/courses/${course.id}`} className="hover:text-brand-700 hover:underline">{pick(course, 'title')}</Link> : (message.courseTitle ?? t('admin.messages.general'))}</dd></div>
             <div className="col-span-2 sm:col-span-1"><dt className="text-xs font-medium uppercase tracking-wide text-slate-400">{t('admin.messages.detail.received')}</dt><dd className="mt-0.5 font-medium text-slate-900">{fmt.dateTime(message.createdAt)}</dd></div>
-            <div><dt className="text-xs font-medium uppercase tracking-wide text-slate-400">{t('admin.messages.detail.language')}</dt><dd className="mt-0.5"><Badge>{message.locale.toUpperCase()}</Badge></dd></div>
           </dl>
 
           <div>

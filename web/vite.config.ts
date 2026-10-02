@@ -22,8 +22,8 @@ export default defineConfig({
         id: '/',
         name: 'Meridian Learning Center',
         short_name: 'Meridian',
-        description: 'Practical training in technology, programming, accounting and professional skills.',
-        lang: 'en',
+        description: 'Des formations pratiques en technologie, programmation, comptabilité et compétences professionnelles.',
+        lang: 'fr',
         dir: 'ltr',
         start_url: '/',
         scope: '/',
@@ -38,8 +38,8 @@ export default defineConfig({
           { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
         shortcuts: [
-          { name: 'My learning', short_name: 'Learning', url: '/student', icons: [{ src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' }] },
-          { name: 'Courses', short_name: 'Courses', url: '/courses', icons: [{ src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' }] },
+          { name: 'Mon espace', short_name: 'Mon espace', url: '/student', icons: [{ src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' }] },
+          { name: 'Formations', short_name: 'Formations', url: '/courses', icons: [{ src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' }] },
         ],
       },
       workbox: {

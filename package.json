@@ -2,7 +2,7 @@
   "name": "learning-center",
   "version": "1.0.0",
   "private": true,
-  "description": "Bilingual (EN/FR) learning center platform: public website, admin dashboard, student dashboard and REST API on MongoDB.",
+  "description": "French-language learning center platform: public website, admin dashboard, student dashboard and REST API on MongoDB.",
   "workspaces": [
     "server",
     "web"

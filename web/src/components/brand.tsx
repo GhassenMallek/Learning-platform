@@ -1,6 +1,4 @@
 import { Link } from 'react-router-dom';
-import { useI18n } from '@/i18n';
-import type { Lang } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { useSiteSettings } from '@/lib/queries';
 
@@ -28,27 +26,5 @@ export function Logo({ to = '/', className, showName = true }: { to?: string; cl
         </span>
       )}
     </Link>
-  );
-}
-
-/** EN | FR switch. */
-export function LangSwitcher({ className }: { className?: string }) {
-  const { lang, setLang, t } = useI18n();
-  return (
-    <div role="group" aria-label={t('lang.switch')} className={cn('inline-flex items-center rounded-lg border border-slate-200 bg-white p-0.5 text-xs font-semibold shadow-xs', className)}>
-      {(['en', 'fr'] as Lang[]).map((code) => (
-        <button
-          key={code}
-          type="button"
-          lang={code}
-          aria-pressed={lang === code}
-          aria-label={t(`lang.${code}`)}
-          onClick={() => setLang(code)}
-          className={cn('rounded-md px-2.5 py-1.5 uppercase tracking-wide transition', lang === code ? 'bg-brand-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-900')}
-        >
-          {code}
-        </button>
-      ))}
-    </div>
   );
 }

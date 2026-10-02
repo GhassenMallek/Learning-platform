@@ -57,12 +57,12 @@ Global rules: no horizontal page scroll at any width, `min-w-0` on flex children
 
 **Learning** — Dashboard "Continue learning" resumes at the first incomplete lesson; lesson page → *Mark as complete* → progress ring/bar updates optimistically and is re-validated from the server.
 
-## Language (EN | FR)
+## Language (French only)
 
-- Switcher in every header (public, admin, student); choice persisted (`localStorage`), initial value from the browser, `<html lang>` updated.
-- Typed dictionaries (`en.ts` is the source of truth; `fr.ts` is type-checked against it, so a missing French key is a compile error). Plurals via `Intl.PluralRules`. Dates/numbers/currency via `Intl` with the active locale.
-- Database content is bilingual per field (`title_en` / `title_fr`); when one side is empty the other is used as fallback.
-- Server validation errors return stable codes (`required`, `invalid_email`, `too_short` …) that the UI maps to natural French/English messages.
+- The whole product (public site, admin, student space) is in French: no language switcher, `<html lang="fr">`, manifest `lang: fr`.
+- One typed dictionary, `web/src/i18n/fr.ts` (every `t()` key is checked at compile time). Plurals via `Intl.PluralRules`; dates, numbers and currency via `Intl` with `fr-FR`.
+- Admin forms ask for French text only; the data lives in the `*_fr` fields. The API strips any `*_en` input, and publishing only checks the French content.
+- Server validation errors return stable codes (`required`, `invalid_email`, `too_short` …) that the UI maps to natural French messages.
 
 ## States
 

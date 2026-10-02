@@ -3,7 +3,7 @@ import { ArrowLeft, Eye, EyeOff, ShieldCheck } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { homeFor, useAuth } from '@/auth/AuthProvider';
-import { LangSwitcher, Logo, LogoMark } from '@/components/brand';
+import { Logo, LogoMark } from '@/components/brand';
 import { Button, Field, Input } from '@/components/ui/primitives';
 import { useErrorText, useI18n } from '@/i18n';
 import { useDocumentTitle } from '@/lib/hooks';
@@ -13,7 +13,7 @@ import { rules, validate } from '@/lib/validation';
 
 /** One login screen for both portals: `/login` (students) and `/admin/login` (administrators). */
 export default function Login({ portal }: { portal: 'admin' | 'student' }) {
-  const { t, lang } = useI18n();
+  const { t } = useI18n();
   const errors = useErrorText();
   const { user, login } = useAuth();
   const { data: site } = useSiteSettings();
@@ -58,13 +58,12 @@ export default function Login({ portal }: { portal: 'admin' | 'student' }) {
           <p className="font-display text-4xl font-extrabold leading-tight">{isAdmin ? t('auth.adminTitle') : t('hero.title')}</p>
           <p className="mt-5 text-lg leading-8 text-brand-100/85">{isAdmin ? t('auth.adminSubtitle') : t('hero.subtitle')}</p>
         </div>
-        <p className="relative text-sm text-brand-200/70">{lang === 'fr' ? site?.tagline_fr : site?.tagline_en}</p>
+        <p className="relative text-sm text-brand-200/70">{site?.tagline_fr}</p>
       </aside>
 
       <main id="main" className="flex flex-col px-5 py-6 sm:px-10">
         <div className="flex items-center justify-between">
           <Link to="/" className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-900"><ArrowLeft className="h-4 w-4" aria-hidden />{t('auth.backToSite')}</Link>
-          <LangSwitcher />
         </div>
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
           <div className="lg:hidden"><Logo className="mb-8" /></div>

@@ -99,14 +99,11 @@ const optionalUrl = z
 
 export const siteSettingsSchema = z.object({
   name: reqStr(80),
-  tagline_en: str(160),
   tagline_fr: str(160),
   email: optionalEmail,
   phone: str(40),
   whatsapp: str(40),
-  address_en: str(300),
   address_fr: str(300),
-  hours_en: str(160),
   hours_fr: str(160),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, 'invalid_currency'),
   social: z.object({ facebook: optionalUrl, instagram: optionalUrl, linkedin: optionalUrl, youtube: optionalUrl }),

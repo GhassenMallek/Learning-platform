@@ -1,6 +1,4 @@
-import type { studentEn } from './student.en';
-
-export const studentFr: typeof studentEn = {
+export const studentFr = {
   student: {
     nav: { main: 'Navigation étudiant', dashboard: 'Tableau de bord', courses: 'Mes formations', profile: 'Mon profil', logout: 'Se déconnecter', viewSite: 'Voir le site', role: 'Étudiant' },
     progress: {

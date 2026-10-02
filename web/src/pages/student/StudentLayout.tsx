@@ -2,7 +2,7 @@ import { BookOpen, ExternalLink, LayoutDashboard, LogOut, ShieldAlert, User, typ
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/auth/AuthProvider';
-import { LangSwitcher, Logo } from '@/components/brand';
+import { Logo } from '@/components/brand';
 import { Menu } from '@/components/ui/overlays';
 import { Avatar } from '@/components/ui/primitives';
 import { useI18n, type TKey } from '@/i18n';
@@ -54,7 +54,6 @@ export function StudentLayout() {
         <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white/85 px-4 backdrop-blur-md sm:px-6">
           <div className="lg:hidden"><Logo to="/student" /></div>
           <div className="ml-auto flex items-center gap-2 sm:gap-3">
-            <LangSwitcher />
             {user && (
               <div className="flex items-center gap-2">
                 <div className="hidden text-right leading-tight md:block"><p className="text-sm font-semibold text-slate-900">{user.firstName} {user.lastName}</p><p className="text-xs text-slate-500">{t('student.nav.role')}</p></div>

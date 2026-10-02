@@ -23,14 +23,11 @@ type Json = Record<string, any>;
 // ── Site settings (the centre's public details) ───────────────────────────────────────
 export const DEFAULT_SITE: SiteSettings = {
   name: 'Meridian Learning Center',
-  tagline_en: 'Practical training for real careers',
   tagline_fr: 'Des formations pratiques pour de vraies carrières',
-  email: 'contact@example.com',
+  email: 'contact@atheer.tn',
   phone: '',
   whatsapp: '',
-  address_en: '',
   address_fr: '',
-  hours_en: 'Mon–Fri · 9:00–18:00',
   hours_fr: 'Lun–Ven · 9h00–18h00',
   currency: 'TND',
   social: { facebook: '', instagram: '', linkedin: '', youtube: '' },
@@ -38,7 +35,8 @@ export const DEFAULT_SITE: SiteSettings = {
 
 export async function getSiteSettings(): Promise<SiteSettings> {
   const doc = await Setting.findOne({ key: 'site' });
-  const stored = (doc?.value ?? {}) as Partial<SiteSettings>;
+  // Settings saved before the site went French-only may still hold *_en keys: never return them.
+  const stored = Object.fromEntries(Object.entries(doc?.value ?? {}).filter(([k]) => !k.endsWith('_en'))) as Partial<SiteSettings>;
   return { ...DEFAULT_SITE, ...stored, social: { ...DEFAULT_SITE.social, ...(stored.social ?? {}) } };
 }
 
@@ -57,7 +55,7 @@ export async function submitContact(input: z.output<typeof createContactSchema>)
     const found = await Course.findOne({ _id: input.courseId, status: 'PUBLISHED' }).select('title_en title_fr');
     if (found) {
       course = found._id;
-      courseTitle = input.locale === 'fr' ? found.title_fr : found.title_en;
+      courseTitle = found.title_fr;
     }
   }
   await ContactMessage.create({

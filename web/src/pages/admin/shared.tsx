@@ -51,7 +51,7 @@ export function IconButton({ label, icon: Icon, onClick, disabled, tone }: { lab
   );
 }
 
-export function CourseThumb({ course, className }: { course: Pick<CourseCard, 'slug' | 'title_en' | 'thumbnail'> & { category?: CourseCard['category'] }; className?: string }) {
+export function CourseThumb({ course, className }: { course: Pick<CourseCard, 'slug' | 'thumbnail'> & { category?: CourseCard['category'] }; className?: string }) {
   return (
     <div className={cn('aspect-[16/10] w-14 shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-100', className)}>
       <CourseCover course={course} />

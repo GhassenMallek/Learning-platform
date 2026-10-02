@@ -1,11 +1,11 @@
-# Learning Center — bilingual EdTech platform (EN / FR)
+# Learning Center — French-language EdTech platform
 
 A premium public website, an **Admin dashboard**, a **Student dashboard** and a **REST API** on **MongoDB** — one system where courses, students, enrollments, lessons, progress and contact requests all live in the database and are managed from the admin. Nothing about any course is hard-coded in the front-end.
 
 ```
 Public site  ──┐
 Admin  /admin ─┼──▶  React 19 + Tailwind 4 (Vite)  ──/api──▶  Express 5 + TypeScript  ──▶  MongoDB (Mongoose)
-Student /student ┘        EN | FR                          JWT cookie · RBAC · Zod
+Student /student ┘        FR only                          JWT cookie · RBAC · Zod
 ```
 
 | | |
@@ -47,8 +47,8 @@ Databases used: `learning_center` (app) and `learning_center_test` (tests — th
 The seed inserts 8 courses (Flutter, Java, and six Accounting subjects). They are ordinary rows: the admin can create **Python for Beginners**, or any other course, in the wizard and it appears on the website the moment it is published — no code change.
 
 * **Categories** and **academic years** are admin-managed collections. The public site builds *category → academic year → cards* purely from `course.academicYear`, so "2nd Year" / "3rd Year" (or a new "4th Year") appear automatically.
-* Every translatable field exists twice (`title_en` / `title_fr`, modules, lessons, FAQ, objectives…). The UI (`en.ts` is the source of truth, `fr.ts` is type-checked against it), validation messages, empty states, dates, plurals and currency are localized; the API returns stable error codes that the UI translates.
-* A course is only public when `PUBLISHED`; publishing runs a readiness check (bilingual titles/descriptions, ≥ 1 module, every module has lessons).
+* **French only.** Content is stored in the `*_fr` fields (`title_fr`, `{ fr }` for FAQ, objectives…); the API ignores `*_en` input and never requires English. The UI has one typed dictionary (`web/src/i18n/fr.ts`); dates, plurals and currency use `fr-FR`, and the API returns stable error codes that the UI turns into French messages. Old `*_en` values from the bilingual era may still sit in the database but are never shown.
+* A course is only public when `PUBLISHED`; publishing runs a readiness check (French title and descriptions, ≥ 1 module, every module has lessons).
 
 ## Roles, security and data integrity
 

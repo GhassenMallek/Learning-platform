@@ -3,13 +3,13 @@ import { AlertTriangle, BookOpen, CheckCircle2, Clock, Layers, Pencil, Plus, Sea
 import { useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { CourseDetailView } from '@/components/CourseDetailView';
-import { Avatar, Badge, Button, Segmented, Skeleton, Tabs, buttonClass } from '@/components/ui/primitives';
+import { Avatar, Badge, Button, Skeleton, Tabs, buttonClass } from '@/components/ui/primitives';
 import { DataTable, EmptyState, ErrorState, PageHeader, StatusBadge, type Column } from '@/components/ui/data';
 import { Menu } from '@/components/ui/overlays';
-import { I18nProvider, useI18n, type TKey } from '@/i18n';
+import { useI18n, type TKey } from '@/i18n';
 import { ApiError, api } from '@/lib/api';
 import { useDocumentTitle } from '@/lib/hooks';
-import type { CourseDetail, Enrollment, Lang } from '@/lib/types';
+import type { CourseDetail, Enrollment } from '@/lib/types';
 import { useCourseActions } from './courseActions';
 import { CurriculumEditor } from './Curriculum';
 import { EnrollModal, ProgressCell, useEnrollmentActions } from './Enrollments';
@@ -64,7 +64,6 @@ export default function CourseView() {
   const { t, pick, fmt } = useI18n();
   const [params, setParams] = useSearchParams();
   const tab = (TABS.includes(params.get('tab') as Tab) ? params.get('tab') : 'overview') as Tab;
-  const [previewLang, setPreviewLang] = useState<Lang>('en');
   const actions = useCourseActions({ afterDelete: () => navigate('/admin/courses', { replace: true }) });
   const { data: course, isPending, error, refetch } = useQuery({ queryKey: ['admin', 'course', id], queryFn: () => api.get<CourseDetail>(`/courses/${id}`) });
   useDocumentTitle(course ? pick(course, 'title') : t('admin.courses.title'));
@@ -147,11 +146,8 @@ export default function CourseView() {
       {tab === 'curriculum' && <Panel><CurriculumEditor courseId={course.id} /></Panel>}
       {tab === 'students' && <CourseStudents course={course} />}
       {tab === 'preview' && (
-        <Panel padded={false} title={t('admin.wizard.publish.preview')} description={t('admin.wizard.publish.subtitle')}
-          actions={<Segmented label={t('admin.wizard.publish.previewLanguage')} value={previewLang} onChange={setPreviewLang} options={[{ value: 'en', label: 'EN' }, { value: 'fr', label: 'FR' }]} />}>
-          <I18nProvider forcedLang={previewLang}>
-            <div className="max-h-[75vh] overflow-y-auto overflow-x-hidden rounded-b-xl" lang={previewLang}><CourseDetailView course={course} preview /></div>
-          </I18nProvider>
+        <Panel padded={false} title={t('admin.wizard.publish.preview')} description={t('admin.wizard.publish.subtitle')}>
+          <div className="max-h-[75vh] overflow-y-auto overflow-x-hidden rounded-b-xl"><CourseDetailView course={course} preview /></div>
         </Panel>
       )}
       {actions.dialog}

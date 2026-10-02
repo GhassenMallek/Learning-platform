@@ -142,15 +142,15 @@ export interface ReadinessIssue {
 export function computeReadiness(course: Json, outline: OutlineModule[]): { ok: boolean; issues: ReadinessIssue[] } {
   const issues: ReadinessIssue[] = [];
   const blank = (v: unknown) => typeof v !== 'string' || v.trim() === '';
-  for (const f of ['title_en', 'title_fr', 'shortDescription_en', 'shortDescription_fr', 'description_en', 'description_fr']) {
+  for (const f of ['title_fr', 'shortDescription_fr', 'description_fr']) {
     if (blank(course[f])) issues.push({ code: f });
   }
   if (outline.length === 0) issues.push({ code: 'no_modules' });
   for (const m of outline) {
-    if (blank(m.title_en) || blank(m.title_fr)) issues.push({ code: 'module_title', moduleId: m.id });
+    if (blank(m.title_fr)) issues.push({ code: 'module_title', moduleId: m.id });
     if (m.lessons.length === 0) issues.push({ code: 'module_empty', moduleId: m.id });
     for (const l of m.lessons) {
-      if (blank(l.title_en) || blank(l.title_fr)) issues.push({ code: 'lesson_title', moduleId: m.id, lessonId: l.id });
+      if (blank(l.title_fr)) issues.push({ code: 'lesson_title', moduleId: m.id, lessonId: l.id });
     }
   }
   return { ok: issues.length === 0, issues };
@@ -186,7 +186,7 @@ export async function listCourses(query: ListQuery, admin: boolean) {
   const sort: Record<string, 1 | -1> =
     query.sort === 'newest' ? { createdAt: -1 }
     : query.sort === 'updated' ? { updatedAt: -1 }
-    : query.sort === 'title' ? { title_en: 1 }
+    : query.sort === 'title' ? { title_fr: 1 }
     : admin && !query.sort ? { updatedAt: -1 }
     : { sortOrder: 1, createdAt: 1 };
 
@@ -253,7 +253,7 @@ async function assertTaxonomy(categoryId?: string, academicYearId?: string | nul
 
 export async function createCourse(input: CreateInput): Promise<Json> {
   await assertTaxonomy(input.category, input.academicYear);
-  const slug = input.slug ?? (await uniqueSlug(Course, input.title_en));
+  const slug = input.slug ?? (await uniqueSlug(Course, input.title_fr));
   if (input.slug && (await Course.exists({ slug }))) throw conflict('SLUG_TAKEN', 'This URL slug is already used');
   const last = await Course.findOne().sort({ sortOrder: -1 }).select('sortOrder');
   const course = await Course.create({ sortOrder: (last?.sortOrder ?? 0) + 10, ...input, slug, status: 'DRAFT', publishedAt: null });

@@ -86,7 +86,7 @@ describe('course administration', () => {
     const anonymous = client();
     const { agent: student } = await studentClient();
     for (const who of [anonymous, student]) {
-      expect((await who.post('/api/courses').send({ title_en: 'x', title_fr: 'y', category: String(course.category) })).status).toBeGreaterThanOrEqual(401);
+      expect((await who.post('/api/courses').send({ title_fr: 'y', category: String(course.category) })).status).toBeGreaterThanOrEqual(401);
       expect((await who.put(`/api/courses/${course.id}`).send({ title_en: 'hacked' })).status).toBeGreaterThanOrEqual(401);
       expect((await who.delete(`/api/courses/${course.id}`)).status).toBeGreaterThanOrEqual(401);
       expect((await who.patch(`/api/courses/${course.id}/publish`)).status).toBeGreaterThanOrEqual(401);
@@ -97,7 +97,7 @@ describe('course administration', () => {
     const admin = await adminClient();
     const cat = await makeCategory();
     const res = await admin.post('/api/courses').send({
-      title_en: 'Python for Beginners',
+      title_en: 'Python for Beginners', // English is no longer accepted: ignored
       title_fr: 'Python pour débutants',
       category: cat.id,
       status: 'PUBLISHED', // must be ignored
@@ -105,36 +105,37 @@ describe('course administration', () => {
       _id: '64b000000000000000000000',
     });
     expect(res.status).toBe(201);
-    expect(res.body.data).toMatchObject({ slug: 'python-for-beginners', status: 'DRAFT', publishedAt: null });
+    expect(res.body.data).toMatchObject({ slug: 'python-pour-debutants', status: 'DRAFT', publishedAt: null, title_en: '' });
     expect(res.body.data.id).not.toBe('64b000000000000000000000');
-    const again = await admin.post('/api/courses').send({ title_en: 'Python for Beginners', title_fr: 'Python 2', category: cat.id });
-    expect(again.body.data.slug).toBe('python-for-beginners-2');
+    const again = await admin.post('/api/courses').send({ title_fr: 'Python pour débutants', category: cat.id });
+    expect(again.body.data.slug).toBe('python-pour-debutants-2');
   });
 
-  it('validates bilingual input with per-field codes the UI can translate', async () => {
+  it('requires the French title and validates fields with codes the UI can translate', async () => {
     const admin = await adminClient();
-    const res = await admin.post('/api/courses').send({ title_en: '', title_fr: 'ok', category: 'nope' });
+    const res = await admin.post('/api/courses').send({ title_fr: '', category: 'nope' });
     expect(res.status).toBe(400);
     const fields = Object.fromEntries(res.body.error.details.map((d: { field: string; code: string }) => [d.field, d.code]));
-    expect(fields).toMatchObject({ title_en: 'required', category: 'invalid_id' });
+    expect(fields).toMatchObject({ title_fr: 'required', category: 'invalid_id' });
   });
 
   it('cannot be published until it is complete, then publishes and becomes public', async () => {
     const admin = await adminClient();
     const cat = await makeCategory();
-    const created = await admin.post('/api/courses').send({ title_en: 'Web Dev', title_fr: 'Dév Web', category: cat.id });
+    const created = await admin.post('/api/courses').send({ title_fr: 'Web Dev', category: cat.id });
     const id = created.body.data.id;
 
     const blocked = await admin.patch(`/api/courses/${id}/publish`);
     expect(blocked.status).toBe(422);
     expect(blocked.body.error.code).toBe('COURSE_NOT_PUBLISHABLE');
     const codes = blocked.body.error.details.map((i: { code: string }) => i.code);
-    expect(codes).toEqual(expect.arrayContaining(['shortDescription_en', 'description_fr', 'no_modules']));
+    expect(codes).toEqual(expect.arrayContaining(['shortDescription_fr', 'description_fr', 'no_modules']));
+    expect(codes.some((c: string) => c.endsWith('_en'))).toBe(false); // English is never required
     expect((await client().get('/api/courses/web-dev')).status).toBe(404);
 
-    await admin.put(`/api/courses/${id}`).send({ shortDescription_en: 's', shortDescription_fr: 's', description_en: 'd', description_fr: 'd' });
-    const mod = await admin.post('/api/modules').send({ courseId: id, title_en: 'Intro', title_fr: 'Intro' });
-    await admin.post('/api/lessons').send({ moduleId: mod.body.data.id, title_en: 'Hello', title_fr: 'Bonjour' });
+    await admin.put(`/api/courses/${id}`).send({ shortDescription_fr: 's', description_fr: 'd' });
+    const mod = await admin.post('/api/modules').send({ courseId: id, title_fr: 'Intro' });
+    await admin.post('/api/lessons').send({ moduleId: mod.body.data.id, title_fr: 'Bonjour' });
 
     const ok = await admin.patch(`/api/courses/${id}/publish`);
     expect(ok.status).toBe(200);
@@ -171,12 +172,12 @@ describe('course administration', () => {
 
   it('manages categories and academic years, protecting the ones in use', async () => {
     const admin = await adminClient();
-    const created = await admin.post('/api/categories').send({ name_en: 'Marketing', name_fr: 'Marketing' });
+    const created = await admin.post('/api/categories').send({ name_fr: 'Marketing' });
     expect(created.status).toBe(201);
     expect(created.body.data.slug).toBe('marketing');
-    expect((await admin.post('/api/categories').send({ name_en: 'Marketing', name_fr: 'Marketing', slug: 'marketing' })).status).toBe(409);
+    expect((await admin.post('/api/categories').send({ name_fr: 'Marketing', slug: 'marketing' })).status).toBe(409);
 
-    const year = await admin.post('/api/academic-years').send({ name_en: '4th Year', name_fr: '4e année' });
+    const year = await admin.post('/api/academic-years').send({ name_fr: '4e année' });
     expect(year.status).toBe(201);
 
     const { category, year: usedYear } = await makeCourse({ slug: 'c1', year: '2nd-year' });

@@ -1,6 +1,4 @@
-import type { commonEn } from './common.en';
-
-export const commonFr: typeof commonEn = {
+export const commonFr = {
   common: {
     updateReady: 'Une nouvelle version de l’application est disponible.',
     updateReload: 'Recharger',
@@ -76,7 +74,6 @@ export const commonFr: typeof commonEn = {
     updated: 'Mot de passe mis à jour',
     mustChange: 'Pour votre sécurité, veuillez choisir un nouveau mot de passe dès maintenant.',
   },
-  lang: { switch: 'Changer de langue', en: 'English', fr: 'Français' },
   level: { BEGINNER: 'Débutant', INTERMEDIATE: 'Intermédiaire', ADVANCED: 'Avancé', ALL_LEVELS: 'Tous niveaux' },
   duration: {
     HOURS_one: '{count} heure',

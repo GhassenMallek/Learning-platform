@@ -28,7 +28,7 @@ const categorySchema = applyJson(
   new Schema<ICategory>(
     {
       slug: { type: String, required: true, unique: true, trim: true, lowercase: true, maxlength: 80 },
-      name_en: { type: String, required: true, trim: true, maxlength: 80 },
+      name_en: { type: String, trim: true, default: '', maxlength: 80 },
       name_fr: { type: String, required: true, trim: true, maxlength: 80 },
       description_en: { type: String, trim: true, default: '', maxlength: 400 },
       description_fr: { type: String, trim: true, default: '', maxlength: 400 },
@@ -54,7 +54,7 @@ const academicYearSchema = applyJson(
   new Schema<IAcademicYear>(
     {
       slug: { type: String, required: true, unique: true, trim: true, lowercase: true, maxlength: 80 },
-      name_en: { type: String, required: true, trim: true, maxlength: 60 },
+      name_en: { type: String, trim: true, default: '', maxlength: 60 },
       name_fr: { type: String, required: true, trim: true, maxlength: 60 },
       sortOrder: { type: Number, default: 0 },
     },
@@ -115,7 +115,7 @@ const courseSchema = applyJson(
   new Schema<ICourse>(
     {
       slug: { type: String, required: true, unique: true, trim: true, lowercase: true, maxlength: 100 },
-      title_en: { type: String, required: true, trim: true, maxlength: 200 },
+      title_en: { type: String, trim: true, default: '', maxlength: 200 },
       title_fr: { type: String, required: true, trim: true, maxlength: 200 },
       shortDescription_en: { type: String, trim: true, default: '', maxlength: 400 },
       shortDescription_fr: { type: String, trim: true, default: '', maxlength: 400 },
@@ -164,7 +164,7 @@ const moduleSchema = applyJson(
   new Schema<IModule>(
     {
       course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
-      title_en: { type: String, required: true, trim: true, maxlength: 200 },
+      title_en: { type: String, trim: true, default: '', maxlength: 200 },
       title_fr: { type: String, required: true, trim: true, maxlength: 200 },
       description_en: { type: String, trim: true, default: '', maxlength: 1000 },
       description_fr: { type: String, trim: true, default: '', maxlength: 1000 },
@@ -226,7 +226,7 @@ const lessonSchema = applyJson(
       module: { type: Schema.Types.ObjectId, ref: 'Module', required: true },
       course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
       type: { type: String, enum: LESSON_TYPES, default: 'TEXT' },
-      title_en: { type: String, required: true, trim: true, maxlength: 200 },
+      title_en: { type: String, trim: true, default: '', maxlength: 200 },
       title_fr: { type: String, required: true, trim: true, maxlength: 200 },
       description_en: { type: String, trim: true, default: '', maxlength: 1000 },
       description_fr: { type: String, trim: true, default: '', maxlength: 1000 },

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ContactMessage, Enrollment, Student, User } from '../src/db';
 import { adminClient, client, makeCourse, makeStudent, studentClient, useTestDatabase } from './helpers';
 
-const valid = { fullName: 'Leila Mansouri', email: 'Leila@Example.com', phone: '+216 22 456 789', message: 'I would like more information please.', locale: 'en' };
+const valid = { fullName: 'Leila Mansouri', email: 'Leila@Example.com', phone: '+216 22 456 789', message: 'Je souhaite plus d’informations, merci.', locale: 'fr' };
 
 describe('contact requests', () => {
   useTestDatabase();
@@ -12,13 +12,13 @@ describe('contact requests', () => {
     const res = await client().post('/api/contact').send({ ...valid, courseId: course.id });
     expect(res.status).toBe(201);
     const stored = await ContactMessage.findOne();
-    expect(stored).toMatchObject({ fullName: 'Leila Mansouri', email: 'leila@example.com', status: 'NEW', courseTitle: `Course ${course.slug}`, locale: 'en' });
+    expect(stored).toMatchObject({ fullName: 'Leila Mansouri', email: 'leila@example.com', status: 'NEW', courseTitle: `Cours ${course.slug}`, locale: 'fr' });
     expect(String(stored!.course)).toBe(course.id);
   });
 
-  it('keeps the visitor language for the course title snapshot', async () => {
+  it('snapshots the French course title, whatever locale the client sends', async () => {
     const { course } = await makeCourse();
-    await client().post('/api/contact').send({ ...valid, courseId: course.id, locale: 'fr' });
+    await client().post('/api/contact').send({ ...valid, courseId: course.id, locale: 'en' });
     expect((await ContactMessage.findOne())!.courseTitle).toBe(`Cours ${course.slug}`);
   });
 
